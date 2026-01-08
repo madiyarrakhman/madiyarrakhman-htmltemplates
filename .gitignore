@@ -15,6 +15,9 @@ build/
 .env.production
 api/.env
 
+# API Keys (don't commit the configured version)
+config.js
+
 # OS files
 .DS_Store
 Thumbs.db

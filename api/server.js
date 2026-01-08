@@ -11,6 +11,47 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('../')); // Serve static files from root
 
+// API Key Authentication Middleware
+const authenticatePublicKey = (req, res, next) => {
+    const apiKey = req.headers['x-api-key'];
+
+    if (!apiKey) {
+        return res.status(401).json({
+            success: false,
+            error: 'API key is required. Please provide X-API-Key header.'
+        });
+    }
+
+    if (apiKey !== process.env.PUBLIC_API_KEY) {
+        return res.status(403).json({
+            success: false,
+            error: 'Invalid API key'
+        });
+    }
+
+    next();
+};
+
+const authenticatePrivateKey = (req, res, next) => {
+    const apiKey = req.headers['x-api-key'];
+
+    if (!apiKey) {
+        return res.status(401).json({
+            success: false,
+            error: 'Private API key is required. Please provide X-API-Key header.'
+        });
+    }
+
+    if (apiKey !== process.env.PRIVATE_API_KEY) {
+        return res.status(403).json({
+            success: false,
+            error: 'Invalid private API key. Admin access required.'
+        });
+    }
+
+    next();
+};
+
 // PostgreSQL connection pool
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -48,8 +89,8 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Wedding RSVP API is running' });
 });
 
-// Get all RSVP responses (for admin)
-app.get('/api/rsvp', async (req, res) => {
+// Get all RSVP responses (for admin) - requires private key
+app.get('/api/rsvp', authenticatePrivateKey, async (req, res) => {
     try {
         const result = await pool.query(
             'SELECT * FROM rsvp_responses ORDER BY created_at DESC'
@@ -68,8 +109,8 @@ app.get('/api/rsvp', async (req, res) => {
     }
 });
 
-// Get RSVP statistics
-app.get('/api/rsvp/stats', async (req, res) => {
+// Get RSVP statistics - requires private key
+app.get('/api/rsvp/stats', authenticatePrivateKey, async (req, res) => {
     try {
         const statsQuery = `
             SELECT 
@@ -94,8 +135,8 @@ app.get('/api/rsvp/stats', async (req, res) => {
     }
 });
 
-// Submit RSVP response
-app.post('/api/rsvp', async (req, res) => {
+// Submit RSVP response - requires public key
+app.post('/api/rsvp', authenticatePublicKey, async (req, res) => {
     const { name, email, phone, attendance, guestCount, message } = req.body;
 
     // Validation
@@ -167,8 +208,8 @@ app.post('/api/rsvp', async (req, res) => {
     }
 });
 
-// Delete RSVP (for admin)
-app.delete('/api/rsvp/:id', async (req, res) => {
+// Delete RSVP (for admin) - requires private key
+app.delete('/api/rsvp/:id', authenticatePrivateKey, async (req, res) => {
     const { id } = req.params;
 
     try {

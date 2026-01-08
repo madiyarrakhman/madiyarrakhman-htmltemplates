@@ -48,12 +48,13 @@ rsvpForm.addEventListener('submit', async (e) => {
     };
 
     try {
-        // Send data to backend API
+        // Send data to backend API with authentication
         const response = await fetch('/api/rsvp', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'X-API-Key': API_CONFIG.PUBLIC_API_KEY
             },
             body: JSON.stringify(formData)
         });
