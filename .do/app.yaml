@@ -22,6 +22,12 @@ services:
       - key: DATABASE_URL
         scope: RUN_TIME
         value: ${db.DATABASE_URL}
+      - key: PUBLIC_API_KEY
+        scope: RUN_AND_BUILD_TIME
+        type: SECRET
+      - key: PRIVATE_API_KEY
+        scope: RUN_TIME
+        type: SECRET
     health_check:
       http_path: /api/health
 
@@ -34,11 +40,15 @@ static_sites:
       repo: YOUR_GITHUB_USERNAME/YOUR_REPO_NAME
     source_dir: /
     output_dir: /
+    build_command: ./build.sh
     index_document: wedding-invitation.html
     error_document: wedding-invitation.html
     routes:
       - path: /
-    envs: []
+    envs:
+      - key: PUBLIC_API_KEY
+        scope: BUILD_TIME
+        type: SECRET
 
 # PostgreSQL Database
 databases:
