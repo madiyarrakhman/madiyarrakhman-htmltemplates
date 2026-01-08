@@ -37,7 +37,7 @@ app.use(express.static(path.join(__dirname, '../')));
 // PostgreSQL connection
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false }
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
 // Admin Auth Middleware
