@@ -272,17 +272,22 @@
                 const invitesRes = await fetch('/api/admin/invitations');
                 const invites = await invitesRes.json();
                 const tbody = document.getElementById('inviteList');
-                tbody.innerHTML = invites.map(i => `
-                    <tr>
-                        <td>${escapeHTML(i.phone_number)}</td>
-                        <td><span class="badge">${escapeHTML(i.lang)}</span></td>
-                        <td>${i.rsvp_count}</td>
-                        <td>${i.approved_guests || 0}</td>
-                        <td>
-                            <span class="copy-link" onclick="copyLink('${i.uuid}')">Копировать ссылку</span>
-                        </td>
-                    </tr>
-                `).join('');
+
+                if (Array.isArray(invites)) {
+                    tbody.innerHTML = invites.map(i => `
+                        <tr>
+                            <td>${escapeHTML(i.phone_number)}</td>
+                            <td><span class="badge">${escapeHTML(i.lang)}</span></td>
+                            <td>${i.rsvp_count}</td>
+                            <td>${i.approved_guests || 0}</td>
+                            <td>
+                                <span class="copy-link" onclick="copyLink('${i.uuid}')">Копировать ссылку</span>
+                            </td>
+                        </tr>
+                    `).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Нет данных или сессия истекла</td></tr>';
+                }
             } catch (err) {
                 console.error(err);
             }
