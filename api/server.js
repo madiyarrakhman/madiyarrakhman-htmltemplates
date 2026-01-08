@@ -256,9 +256,20 @@ app.post('/api/invitations', async (req, res) => {
              VALUES ($1, $2, $3, $4) RETURNING *`,
             [phoneNumber, templateCode || 'starry-night', lang || 'ru', JSON.stringify(content)]
         );
-        res.status(201).json({ success: true, invitation: result.rows[0] });
+
+        const invitation = result.rows[0];
+        const protocol = req.protocol;
+        const host = req.get('host');
+        const fullUrl = `${protocol}://${host}/i/${invitation.uuid}`;
+
+        res.status(201).json({
+            success: true,
+            invitation: invitation,
+            fullUrl: fullUrl
+        });
     } catch (error) {
-        res.status(500).json({ error: 'Failed to create' });
+        console.error('Public Create Error:', error);
+        res.status(500).json({ error: 'Failed to create', details: error.message });
     }
 });
 
