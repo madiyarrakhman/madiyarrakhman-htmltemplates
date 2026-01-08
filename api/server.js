@@ -1,0 +1,221 @@
+const express = require('express');
+const { Pool } = require('pg');
+const cors = require('cors');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+app.use(express.static('../')); // Serve static files from root
+
+// PostgreSQL connection pool
+const pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+});
+
+// Initialize database table
+const initDB = async () => {
+    const createTableQuery = `
+        CREATE TABLE IF NOT EXISTS rsvp_responses (
+            id SERIAL PRIMARY KEY,
+            guest_name VARCHAR(255) NOT NULL,
+            guest_email VARCHAR(255) NOT NULL,
+            guest_phone VARCHAR(50),
+            attendance VARCHAR(10) NOT NULL,
+            guest_count INTEGER DEFAULT 1,
+            message TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+    `;
+
+    try {
+        await pool.query(createTableQuery);
+        console.log('✅ Database table initialized');
+    } catch (error) {
+        console.error('❌ Error initializing database:', error);
+    }
+};
+
+// Initialize DB on startup
+initDB();
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', message: 'Wedding RSVP API is running' });
+});
+
+// Get all RSVP responses (for admin)
+app.get('/api/rsvp', async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM rsvp_responses ORDER BY created_at DESC'
+        );
+        res.json({
+            success: true,
+            count: result.rows.length,
+            data: result.rows
+        });
+    } catch (error) {
+        console.error('Error fetching RSVPs:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch RSVP responses'
+        });
+    }
+});
+
+// Get RSVP statistics
+app.get('/api/rsvp/stats', async (req, res) => {
+    try {
+        const statsQuery = `
+            SELECT 
+                COUNT(*) as total_responses,
+                SUM(CASE WHEN attendance = 'yes' THEN 1 ELSE 0 END) as attending,
+                SUM(CASE WHEN attendance = 'no' THEN 1 ELSE 0 END) as not_attending,
+                SUM(CASE WHEN attendance = 'yes' THEN guest_count ELSE 0 END) as total_guests
+            FROM rsvp_responses;
+        `;
+
+        const result = await pool.query(statsQuery);
+        res.json({
+            success: true,
+            stats: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error fetching stats:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to fetch statistics'
+        });
+    }
+});
+
+// Submit RSVP response
+app.post('/api/rsvp', async (req, res) => {
+    const { name, email, phone, attendance, guestCount, message } = req.body;
+
+    // Validation
+    if (!name || !email || !attendance) {
+        return res.status(400).json({
+            success: false,
+            error: 'Name, email, and attendance are required fields'
+        });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({
+            success: false,
+            error: 'Invalid email format'
+        });
+    }
+
+    // Validate attendance value
+    if (!['yes', 'no'].includes(attendance)) {
+        return res.status(400).json({
+            success: false,
+            error: 'Attendance must be "yes" or "no"'
+        });
+    }
+
+    try {
+        const insertQuery = `
+            INSERT INTO rsvp_responses 
+            (guest_name, guest_email, guest_phone, attendance, guest_count, message)
+            VALUES ($1, $2, $3, $4, $5, $6)
+            RETURNING *;
+        `;
+
+        const values = [
+            name,
+            email,
+            phone || null,
+            attendance,
+            attendance === 'yes' ? (guestCount || 1) : 0,
+            message || null
+        ];
+
+        const result = await pool.query(insertQuery, values);
+
+        console.log(`✅ New RSVP from ${name} (${attendance})`);
+
+        res.status(201).json({
+            success: true,
+            message: 'RSVP submitted successfully',
+            data: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error submitting RSVP:', error);
+
+        // Check for duplicate email
+        if (error.code === '23505') {
+            return res.status(409).json({
+                success: false,
+                error: 'An RSVP with this email already exists'
+            });
+        }
+
+        res.status(500).json({
+            success: false,
+            error: 'Failed to submit RSVP'
+        });
+    }
+});
+
+// Delete RSVP (for admin)
+app.delete('/api/rsvp/:id', async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const result = await pool.query(
+            'DELETE FROM rsvp_responses WHERE id = $1 RETURNING *',
+            [id]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'RSVP not found'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'RSVP deleted successfully',
+            data: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error deleting RSVP:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Failed to delete RSVP'
+        });
+    }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+    });
+});
+
+// Start server
+app.listen(PORT, () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+    console.log('SIGTERM received, closing server...');
+    await pool.end();
+    process.exit(0);
+});

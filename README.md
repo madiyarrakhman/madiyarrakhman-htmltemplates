@@ -4,19 +4,40 @@ Beautiful, modern wedding invitation website with elegant animations and interac
 
 ## ✨ Features
 
+### Frontend
 - 🎨 Premium dark theme with rose-gold accents
 - ⭐ Animated starry background
 - 💫 Smooth scroll animations
 - 💝 Floating hearts effect
 - ✨ Mouse sparkle trail
 - 📱 Fully responsive design
-- 📝 Interactive RSVP form
-- ⏰ Countdown timer
 - 🎭 Parallax effects
+
+### Backend API
+- 📝 Full RSVP form submission
+- 🗄️ PostgreSQL database storage
+- 📊 Statistics and analytics endpoints
+- ✅ Form validation
+- 🔒 Error handling
+- 🚀 Ready for production deployment
+
+## 🏗️ Architecture
+
+```
+wedding-invitation/
+├── Frontend (Static HTML/CSS/JS)
+│   ├── wedding-invitation.html
+│   ├── styles.css
+│   └── script.js
+└── Backend API (Node.js + Express)
+    ├── server.js
+    ├── package.json
+    └── PostgreSQL Database
+```
 
 ## 🚀 Quick Start
 
-### Local Development
+### Frontend Only (Static)
 
 1. Open `wedding-invitation.html` directly in your browser, or
 2. Use a local server:
@@ -26,17 +47,70 @@ Beautiful, modern wedding invitation website with elegant animations and interac
    ```
    Then open http://localhost:3000
 
+### Full Stack (Frontend + Backend + Database)
+
+1. **Setup PostgreSQL:**
+   ```bash
+   # Install PostgreSQL (macOS)
+   brew install postgresql@15
+   brew services start postgresql@15
+   
+   # Create database
+   createdb wedding_rsvp
+   ```
+
+2. **Configure Backend:**
+   ```bash
+   cd api
+   cp .env.example .env
+   # Edit .env with your database URL
+   ```
+
+3. **Install & Run:**
+   ```bash
+   # Install backend dependencies
+   cd api
+   npm install
+   
+   # Start backend server
+   npm start
+   # API will run on http://localhost:3000
+   ```
+
+4. **Open Frontend:**
+   - Open `wedding-invitation.html` in browser
+   - Or use: `npx serve .` from root directory
+   - Form submissions will now save to PostgreSQL!
+
+### API Documentation
+
+See [api/README.md](api/README.md) for detailed API documentation.
+
 ### Deployment
 
-#### DigitalOcean App Platform (Recommended for this project)
+#### DigitalOcean App Platform (Recommended for Full Stack)
+
+**This will deploy:**
+- ✅ Frontend (Static Site)
+- ✅ Backend API (Node.js)
+- ✅ PostgreSQL Database
 
 **Option 1: Via Web Interface (Easiest)**
 1. Go to [DigitalOcean App Platform](https://cloud.digitalocean.com/apps)
 2. Click "Create App"
 3. Connect your GitHub repository
-4. DigitalOcean will auto-detect the static site
-5. Click "Next" → "Next" → "Launch App"
-6. Your app will be live in ~2 minutes!
+4. DigitalOcean will auto-detect the configuration from `.do/app.yaml`
+5. It will automatically create:
+   - Frontend static site
+   - Backend API service
+   - PostgreSQL database
+6. Click "Next" → "Next" → "Launch App"
+7. Your app will be live in ~3-5 minutes!
+
+**Important:** Update `.do/app.yaml` with your GitHub username and repo name:
+```yaml
+repo: YOUR_GITHUB_USERNAME/YOUR_REPO_NAME
+```
 
 **Option 2: Via CLI**
 ```bash
@@ -50,10 +124,11 @@ doctl auth init
 doctl apps create --spec .do/app.yaml
 ```
 
-**Option 3: Manual Upload**
-1. Create a new Static Site on DigitalOcean
-2. Upload all files via their interface
-3. Set `wedding-invitation.html` as index document
+**Pricing:**
+- Static Site: Free
+- API (basic-xxs): ~$5/month
+- PostgreSQL (Dev): ~$7/month
+- **Total: ~$12/month**
 
 #### Vercel
 ```bash

@@ -28,35 +28,59 @@ document.addEventListener('DOMContentLoaded', () => {
 const rsvpForm = document.getElementById('rsvpForm');
 const successMessage = document.getElementById('successMessage');
 
-rsvpForm.addEventListener('submit', (e) => {
+rsvpForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    
+
+    // Disable submit button to prevent double submission
+    const submitBtn = rsvpForm.querySelector('.submit-btn');
+    const originalBtnText = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span>Отправка...</span>';
+
     // Get form data
     const formData = {
         name: document.getElementById('guestName').value,
         email: document.getElementById('guestEmail').value,
         phone: document.getElementById('guestPhone').value,
         attendance: document.querySelector('input[name="attendance"]:checked').value,
-        guestCount: document.getElementById('guestCount').value,
+        guestCount: parseInt(document.getElementById('guestCount').value),
         message: document.getElementById('guestMessage').value
     };
-    
-    // Log form data (in production, you would send this to a server)
-    console.log('RSVP Submission:', formData);
-    
-    // Show success message
-    rsvpForm.style.display = 'none';
-    successMessage.classList.add('show');
-    
-    // Optional: Send data to server
-    // fetch('/api/rsvp', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(formData)
-    // });
-    
-    // Scroll to success message
-    successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+    try {
+        // Send data to backend API
+        const response = await fetch('/api/rsvp', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+
+        if (response.ok && result.success) {
+            // Success - hide form and show success message
+            console.log('✅ RSVP submitted successfully:', result);
+            rsvpForm.style.display = 'none';
+            successMessage.classList.add('show');
+            successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else {
+            // API returned an error
+            throw new Error(result.error || 'Failed to submit RSVP');
+        }
+    } catch (error) {
+        // Handle errors
+        console.error('❌ Error submitting RSVP:', error);
+
+        // Show error message to user
+        alert(`Ошибка при отправке: ${error.message}\n\nПожалуйста, попробуйте еще раз или свяжитесь с нами напрямую.`);
+
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+    }
 });
 
 // ==================== //
@@ -85,15 +109,15 @@ let lastScrollY = window.scrollY;
 window.addEventListener('scroll', () => {
     const scrollY = window.scrollY;
     const hero = document.querySelector('.hero-content');
-    
+
     if (hero && scrollY < window.innerHeight) {
         const opacity = 1 - (scrollY / window.innerHeight);
         const translateY = scrollY * 0.5;
-        
+
         hero.style.opacity = opacity;
         hero.style.transform = `translateY(${translateY}px)`;
     }
-    
+
     lastScrollY = scrollY;
 });
 
@@ -122,7 +146,7 @@ attendanceRadios.forEach(radio => {
 
 function createFloatingHearts() {
     const container = document.querySelector('.container');
-    
+
     setInterval(() => {
         const heart = document.createElement('div');
         heart.innerHTML = '♥';
@@ -135,15 +159,15 @@ function createFloatingHearts() {
         heart.style.pointerEvents = 'none';
         heart.style.zIndex = '0';
         heart.style.transition = 'all 6s linear';
-        
+
         document.body.appendChild(heart);
-        
+
         setTimeout(() => {
             heart.style.bottom = '110vh';
             heart.style.opacity = '0';
             heart.style.transform = `translateX(${(Math.random() - 0.5) * 200}px) rotate(${Math.random() * 360}deg)`;
         }, 100);
-        
+
         setTimeout(() => {
             heart.remove();
         }, 6100);
@@ -161,13 +185,13 @@ function updateCountdown() {
     const weddingDate = new Date('2026-06-15T15:00:00').getTime();
     const now = new Date().getTime();
     const distance = weddingDate - now;
-    
+
     if (distance > 0) {
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-        
+
         // You can display this countdown somewhere if needed
         console.log(`${days}д ${hours}ч ${minutes}м ${seconds}с до свадьбы`);
     }
@@ -194,9 +218,9 @@ document.addEventListener('mousemove', (e) => {
         sparkle.style.zIndex = '9999';
         sparkle.style.boxShadow = '0 0 10px var(--color-accent)';
         sparkle.style.animation = 'sparkle 1s ease-out forwards';
-        
+
         document.body.appendChild(sparkle);
-        
+
         setTimeout(() => sparkle.remove(), 1000);
     }
 });
