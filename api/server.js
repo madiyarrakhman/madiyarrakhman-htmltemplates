@@ -57,10 +57,14 @@ const sanitize = (str) => {
 };
 
 // PostgreSQL connection
+const sslConfig = process.env.DATABASE_URL && (process.env.DATABASE_URL.includes('localhost') || process.env.DATABASE_URL.includes('127.0.0.1'))
+    ? false
+    : { rejectUnauthorized: false };
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-    connectionTimeoutMillis: 10000, // 10 seconds timeout
+    ssl: sslConfig,
+    connectionTimeoutMillis: 10000,
 });
 
 pool.on('error', (err) => {
