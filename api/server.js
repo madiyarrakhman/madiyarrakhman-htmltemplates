@@ -57,19 +57,29 @@ const sanitize = (str) => {
 };
 
 // PostgreSQL connection
-const isLocal = process.env.DATABASE_URL && (process.env.DATABASE_URL.includes('localhost') || process.env.DATABASE_URL.includes('127.0.0.1'));
-const sslConfig = isLocal ? false : { rejectUnauthorized: false };
+const dbUrl = process.env.DATABASE_URL || '';
+const isLocal = !dbUrl || dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
 
-console.log(`📡 Database Mode: ${isLocal ? 'Local' : 'Remote (SSL enabled)'}`);
-
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: sslConfig,
+const poolConfig = {
+    connectionString: dbUrl,
     connectionTimeoutMillis: 10000,
-});
+};
+
+if (!isLocal) {
+    // For DigitalOcean Managed DB
+    poolConfig.ssl = {
+        rejectUnauthorized: false
+    };
+    console.log('🛡️ SSL Mode: Enabled (rejectUnauthorized: false) for Remote DB');
+} else {
+    poolConfig.ssl = false;
+    console.log('🏠 SSL Mode: Disabled for Local DB');
+}
+
+const pool = new Pool(poolConfig);
 
 pool.on('error', (err) => {
-    console.error('Unexpected error on idle client', err);
+    console.error('❌ Unexpected error on idle client', err);
 });
 
 // Admin Auth Middleware
