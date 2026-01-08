@@ -241,6 +241,19 @@ app.get('/config.js', (req, res) => {
     res.send(`const API_CONFIG = { PUBLIC_API_KEY: '${publicKey}', API_URL: window.location.origin + '/api' };`);
 });
 
+// Root API info
+app.get('/api', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'Wedding Platform API is running 🚀'
+    });
+});
+
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', message: 'Wedding Platform API is running 🚀' });
+});
+
 // Frontend Routing
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '../admin.html')));
 app.get('/admin/login', (req, res) => res.sendFile(path.join(__dirname, '../admin-login.html')));
