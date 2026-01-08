@@ -1,0 +1,13 @@
+name: wedding-invitation
+static_sites:
+  - name: wedding-invitation-site
+    git:
+      branch: main
+      repo_clone_url: YOUR_REPO_URL
+    source_dir: /
+    output_dir: /
+    index_document: wedding-invitation.html
+    error_document: wedding-invitation.html
+    routes:
+      - path: /
+    envs: []
