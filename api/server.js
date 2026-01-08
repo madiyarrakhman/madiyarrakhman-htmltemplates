@@ -57,9 +57,10 @@ const sanitize = (str) => {
 };
 
 // PostgreSQL connection
-const sslConfig = process.env.DATABASE_URL && (process.env.DATABASE_URL.includes('localhost') || process.env.DATABASE_URL.includes('127.0.0.1'))
-    ? false
-    : { rejectUnauthorized: false };
+const isLocal = process.env.DATABASE_URL && (process.env.DATABASE_URL.includes('localhost') || process.env.DATABASE_URL.includes('127.0.0.1'));
+const sslConfig = isLocal ? false : { rejectUnauthorized: false };
+
+console.log(`📡 Database Mode: ${isLocal ? 'Local' : 'Remote (SSL enabled)'}`);
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
