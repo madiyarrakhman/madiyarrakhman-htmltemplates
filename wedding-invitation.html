@@ -22,14 +22,14 @@
             <div class="hero-content fade-in">
                 <div class="ornament-top">❦</div>
                 <h1 class="main-title">
-                    <span class="name">Анна</span>
+                    <span class="name groom-name">Имя Жениха</span>
                     <span class="ampersand">&</span>
-                    <span class="name">Александр</span>
+                    <span class="name bride-name">Имя Невесты</span>
                 </h1>
                 <p class="subtitle">Приглашают вас разделить с ними радость</p>
                 <div class="date-container">
                     <div class="date-line"></div>
-                    <p class="wedding-date">15 июня 2026</p>
+                    <p class="wedding-date">Дата торжества</p>
                     <div class="date-line"></div>
                 </div>
                 <div class="ornament-bottom">❦</div>
@@ -44,10 +44,9 @@
         <section class="story-section" id="story">
             <div class="section-content slide-up">
                 <h2 class="section-title">Наша история</h2>
-                <div class="story-text">
-                    <p>Пять лет назад наши пути пересеклись, и с тех пор мы идём по жизни рука об руку. Каждый день
-                        вместе — это новая страница нашей удивительной истории любви.</p>
-                    <p>И теперь мы готовы написать самую важную главу — стать мужем и женой.</p>
+                <div class="story-text" id="story-text">
+                    <p>Наша история любви началась с простого взгляда, но переросла в нечто большее. Мы прошли долгий
+                        путь вместе и теперь готовы создать нашу семью.</p>
                 </div>
                 <div class="hearts">
                     <span class="heart">♥</span>
@@ -66,63 +65,22 @@
                     <div class="detail-card">
                         <div class="detail-icon">🕐</div>
                         <h3>Время</h3>
-                        <p class="detail-info">15:00</p>
-                        <p class="detail-subtext">Церемония начнётся ровно в 15:00</p>
+                        <p class="detail-info wedding-time">18:00</p>
+                        <p class="detail-subtext">Сбор гостей в 17:30</p>
                     </div>
 
                     <div class="detail-card">
                         <div class="detail-icon">📍</div>
                         <h3>Место</h3>
-                        <p class="detail-info">Усадьба "Романтика"</p>
-                        <p class="detail-subtext">ул. Садовая, 25, Москва</p>
+                        <p class="detail-info location-name">Название ресторана</p>
+                        <p class="detail-subtext location-address">Адрес мероприятия</p>
                     </div>
 
                     <div class="detail-card">
                         <div class="detail-icon">👔</div>
                         <h3>Дресс-код</h3>
-                        <p class="detail-info">Вечерний наряд</p>
-                        <p class="detail-subtext">Цветовая гамма: пастельные тона</p>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Schedule -->
-        <section class="schedule-section" id="schedule">
-            <div class="section-content slide-up">
-                <h2 class="section-title">Программа дня</h2>
-
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-time">15:00</div>
-                        <div class="timeline-content">
-                            <h3>Церемония бракосочетания</h3>
-                            <p>Официальная часть в живописном саду усадьбы</p>
-                        </div>
-                    </div>
-
-                    <div class="timeline-item">
-                        <div class="timeline-time">16:00</div>
-                        <div class="timeline-content">
-                            <h3>Фуршет и фотосессия</h3>
-                            <p>Лёгкие закуски, шампанское и памятные снимки</p>
-                        </div>
-                    </div>
-
-                    <div class="timeline-item">
-                        <div class="timeline-time">18:00</div>
-                        <div class="timeline-content">
-                            <h3>Праздничный ужин</h3>
-                            <p>Торжественный банкет в главном зале</p>
-                        </div>
-                    </div>
-
-                    <div class="timeline-item">
-                        <div class="timeline-time">21:00</div>
-                        <div class="timeline-content">
-                            <h3>Танцы до утра</h3>
-                            <p>Живая музыка и диджей-сет</p>
-                        </div>
+                        <p class="detail-info">Вечерний стиль</p>
+                        <p class="detail-subtext">Будем рады видеть вас нарядными!</p>
                     </div>
                 </div>
             </div>
@@ -132,24 +90,16 @@
         <section class="rsvp-section" id="rsvp">
             <div class="section-content slide-up">
                 <h2 class="section-title">Подтверждение присутствия</h2>
-                <p class="rsvp-text">Пожалуйста, подтвердите своё присутствие до 1 мая 2026</p>
+                <p class="rsvp-text">Будем рады видеть вас на нашем празднике!</p>
 
                 <form class="rsvp-form" id="rsvpForm">
                     <div class="form-group">
-                        <input type="text" id="guestName" placeholder="Ваше имя" required>
-                    </div>
-
-                    <div class="form-group">
-                        <input type="email" id="guestEmail" placeholder="Email" required>
-                    </div>
-
-                    <div class="form-group">
-                        <input type="tel" id="guestPhone" placeholder="Телефон" required>
+                        <input type="text" id="guestName" placeholder="Ваше Имя и Фамилия" required>
                     </div>
 
                     <div class="form-group radio-group">
                         <label class="radio-label">
-                            <input type="radio" name="attendance" value="yes" required>
+                            <input type="radio" name="attendance" value="yes" checked>
                             <span>С радостью приду!</span>
                         </label>
                         <label class="radio-label">
@@ -159,19 +109,18 @@
                     </div>
 
                     <div class="form-group">
-                        <input type="number" id="guestCount" placeholder="Количество гостей" min="1" max="5" value="1">
-                    </div>
-
-                    <div class="form-group">
-                        <textarea id="guestMessage" placeholder="Пожелания или комментарии" rows="4"></textarea>
+                        <label for="guestCount"
+                            style="margin-bottom: 5px; display: block; color: var(--color-text-secondary);">Количество
+                            гостей</label>
+                        <input type="number" id="guestCount" placeholder="1" min="1" max="5" value="1">
                     </div>
 
                     <button type="submit" class="submit-btn">
-                        <span>Отправить</span>
+                        <span>Отправить ответ</span>
                     </button>
                 </form>
 
-                <div class="success-message" id="successMessage">
+                <div class="success-message" id="successMessage" style="display: none;">
                     <div class="success-icon">✓</div>
                     <p>Спасибо! Ваш ответ получен.</p>
                 </div>
@@ -183,13 +132,17 @@
             <div class="footer-content">
                 <p class="footer-quote">"Любовь — это когда счастье другого человека важнее собственного"</p>
                 <div class="footer-ornament">❦</div>
-                <p class="footer-names">Анна & Александр</p>
-                <p class="footer-date">15.06.2026</p>
+                <p class="footer-names">
+                    <span class="groom-name">Жених</span> & <span class="bride-name">Невеста</span>
+                </p>
+                <p class="footer-date wedding-date">Дата</p>
             </div>
         </footer>
     </div>
 
-    <script src="config.js"></script>
+    <!-- Dynamic Config Loader -->
+    <script src="/config.js"></script>
+    <!-- Application Logic -->
     <script src="script.js"></script>
 </body>
 

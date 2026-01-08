@@ -1,7 +1,8 @@
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
-const path = require('path'); // Add path module
+const path = require('path');
+const crypto = require('crypto'); // For UUID generation
 require('dotenv').config();
 
 const app = express();
@@ -11,313 +12,234 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the ROOT directory (up one level from api/)
-// This makes wedding-invitation.html, styles.css, etc. accessible
+// Serve static files from the ROOT directory
 app.use(express.static(path.join(__dirname, '../')));
 
-// Dynamic Config Endpoint ⚡️
-// This allows frontend to get keys without build-time injection
-app.get('/config.js', (req, res) => {
-    // Prefer FRONTEND_PUBLIC_KEY, fallback to PUBLIC_API_KEY
-    const publicKey = process.env.FRONTEND_PUBLIC_KEY || process.env.PUBLIC_API_KEY || 'YOUR_PUBLIC_KEY_HERE';
-
-    res.setHeader('Content-Type', 'application/javascript');
-    res.send(`
-// API Configuration (Generated Dynamically)
-const API_CONFIG = {
-    PUBLIC_API_KEY: '${publicKey}',
-    API_URL: window.location.origin + '/api'
-};
-
-// Export for use in other scripts
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = API_CONFIG;
-}
-    `);
-});
-
-// API Key Authentication Middleware
-const authenticatePublicKey = (req, res, next) => {
-    const apiKey = req.headers['x-api-key'];
-
-    if (!apiKey) {
-        return res.status(401).json({
-            success: false,
-            error: 'API key is required. Please provide X-API-Key header.'
-        });
-    }
-
-    if (apiKey !== process.env.PUBLIC_API_KEY) {
-        return res.status(403).json({
-            success: false,
-            error: 'Invalid API key'
-        });
-    }
-
-    next();
-};
-
-const authenticatePrivateKey = (req, res, next) => {
-    const apiKey = req.headers['x-api-key'];
-
-    if (!apiKey) {
-        return res.status(401).json({
-            success: false,
-            error: 'Private API key is required. Please provide X-API-Key header.'
-        });
-    }
-
-    if (apiKey !== process.env.PRIVATE_API_KEY) {
-        return res.status(403).json({
-            success: false,
-            error: 'Invalid private API key. Admin access required.'
-        });
-    }
-
-    next();
-};
-
-// PostgreSQL connection pool
-// Always use SSL for DigitalOcean Managed Databases
+// PostgreSQL connection
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: {
-        rejectUnauthorized: false
-    }
+    ssl: { rejectUnauthorized: false }
 });
 
-// Initialize database table
+// Initialize database tables
 const initDB = async () => {
-    const createTableQuery = `
-        CREATE TABLE IF NOT EXISTS rsvp_responses (
-            id SERIAL PRIMARY KEY,
-            guest_name VARCHAR(255) NOT NULL,
-            guest_email VARCHAR(255) NOT NULL,
-            guest_phone VARCHAR(50),
-            attendance VARCHAR(10) NOT NULL,
-            guest_count INTEGER DEFAULT 1,
-            message TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    `;
-
     try {
-        await pool.query(createTableQuery);
-        console.log('✅ Database table initialized');
+        // Templates Table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS templates (
+                id SERIAL PRIMARY KEY,
+                code VARCHAR(50) UNIQUE NOT NULL, -- e.g., 'classic-rose', 'starry-night'
+                name VARCHAR(100) NOT NULL,
+                is_active BOOLEAN DEFAULT true
+            );
+        `);
+
+        // Insert default template if not exists
+        await pool.query(`
+            INSERT INTO templates (code, name) 
+            VALUES ('starry-night', 'Звездная ночь') 
+            ON CONFLICT (code) DO NOTHING;
+        `);
+
+        // Invitations Table
+        // UUID is the unique link for the guest
+        // phone_number links invites to a user
+        // content contains all dynamic text (names, dates, location)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS invitations (
+                id SERIAL PRIMARY KEY,
+                uuid UUID UNIQUE DEFAULT gen_random_uuid(),
+                phone_number VARCHAR(50) NOT NULL,
+                template_code VARCHAR(50) REFERENCES templates(code),
+                lang VARCHAR(10) DEFAULT 'ru', -- 'ru', 'kk', 'en'
+                content JSONB NOT NULL, 
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        // RSVP Responses (linked to invitation)
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS rsvp_responses (
+                id SERIAL PRIMARY KEY,
+                invitation_uuid UUID REFERENCES invitations(uuid),
+                guest_name VARCHAR(255),
+                attendance VARCHAR(10) NOT NULL, -- 'yes', 'no'
+                guest_count INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+
+        console.log('✅ Database tables initialized (Templates, Invitations, RSVP)');
     } catch (error) {
         console.error('❌ Error initializing database:', error);
     }
 };
 
-// Initialize DB on startup
 initDB();
 
-// Root endpoint to verify API is running
-app.get('/api', (req, res) => {
-    res.json({
-        status: 'ok',
-        message: 'Wedding RSVP API is running 🚀',
-        version: '1.0.0'
-    });
+// --- API ENDPOINTS ---
+
+// 1. Create Invitation (POST /api/invitations)
+// Creates a new link for a specific phone number
+app.post('/api/invitations', async (req, res) => {
+    // Auth check should be here (simple key check for now)
+    const apiKey = req.headers['x-api-key'];
+    if (apiKey !== process.env.PRIVATE_API_KEY) {
+        return res.status(403).json({ error: 'Admin access required to create invitations' });
+    }
+
+    const { phoneNumber, templateCode, lang, content } = req.body;
+
+    if (!phoneNumber || !content) {
+        return res.status(400).json({ error: 'Phone number and content are required' });
+    }
+
+    try {
+        const result = await pool.query(
+            `INSERT INTO invitations (phone_number, template_code, lang, content) 
+             VALUES ($1, $2, $3, $4) 
+             RETURNING uuid, phone_number, template_code, lang, content`,
+            [
+                phoneNumber,
+                templateCode || 'starry-night',
+                lang || 'ru',
+                JSON.stringify(content)
+            ]
+        );
+
+        const invite = result.rows[0];
+        const link = `${req.protocol}://${req.get('host')}/i/${invite.uuid}`;
+
+        res.status(201).json({
+            success: true,
+            link: link,
+            invitation: invite
+        });
+    } catch (error) {
+        console.error('Error creating invitation:', error);
+        res.status(500).json({ error: 'Failed to create invitation' });
+    }
 });
 
-// Root endpoint for / (in case stripped)
-app.get('/', (req, res) => {
-    res.json({
-        status: 'ok',
-        message: 'Wedding RSVP API is running 🚀 (Root)',
-        version: '1.0.0'
-    });
+// 2. Get Invitation Data (GET /api/invitations/:uuid)
+// Public endpoint for rendering the page
+app.get('/api/invitations/:uuid', async (req, res) => {
+    const { uuid } = req.params;
+
+    try {
+        const result = await pool.query(
+            `SELECT * FROM invitations WHERE uuid = $1`,
+            [uuid]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Invitation not found' });
+        }
+
+        res.json(result.rows[0]);
+    } catch (error) {
+        console.error('Error fetching invitation:', error);
+        res.status(500).json({ error: 'Database error' });
+    }
 });
 
-// Root endpoint to verify API is running
-app.get('/api', (req, res) => {
-    res.json({
-        status: 'ok',
-        message: 'Wedding RSVP API is running 🚀',
-        version: '1.0.0'
-    });
+// 3. Update Invitation (PUT /api/invitations/:uuid)
+// Change names, date, location etc.
+app.put('/api/invitations/:uuid', async (req, res) => {
+    const apiKey = req.headers['x-api-key'];
+    if (apiKey !== process.env.PRIVATE_API_KEY) {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { uuid } = req.params;
+    const { content, lang, templateCode } = req.body;
+
+    try {
+        // We use COALESCE to keep existing values if new ones specifically null/undefined
+        // But for JSONB 'content', we'll merge or replace. Here we replace.
+        const result = await pool.query(
+            `UPDATE invitations 
+             SET content = $1, lang = $2, template_code = $3, updated_at = CURRENT_TIMESTAMP
+             WHERE uuid = $4
+             RETURNING *`,
+            [JSON.stringify(content), lang, templateCode, uuid]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Invitation not found' });
+        }
+
+        res.json({ success: true, invitation: result.rows[0] });
+    } catch (error) {
+        console.error('Error updating invitation:', error);
+        res.status(500).json({ error: 'Update failed' });
+    }
+});
+
+// 4. Submit RSVP (POST /api/rsvp/:uuid)
+app.post('/api/rsvp/:uuid', async (req, res) => {
+    const { uuid } = req.params;
+    const { guestName, attendance, guestCount } = req.body;
+
+    try {
+        // Verify UUID exists first
+        const check = await pool.query('SELECT uuid FROM invitations WHERE uuid = $1', [uuid]);
+        if (check.rows.length === 0) {
+            return res.status(404).json({ error: 'Invalid invitation link' });
+        }
+
+        await pool.query(
+            `INSERT INTO rsvp_responses (invitation_uuid, guest_name, attendance, guest_count)
+             VALUES ($1, $2, $3, $4)`,
+            [uuid, guestName, attendance, attendance === 'yes' ? guestCount : 0]
+        );
+
+        res.json({ success: true, message: 'RSVP accepted' });
+    } catch (error) {
+        console.error('RSVP Error:', error);
+        res.status(500).json({ error: 'Failed to save RSVP' });
+    }
+});
+
+// 5. Config Endpoint (Dynamic)
+app.get('/config.js', (req, res) => {
+    const publicKey = process.env.FRONTEND_PUBLIC_KEY || process.env.PUBLIC_API_KEY || 'no-key';
+    res.setHeader('Content-Type', 'application/javascript');
+    res.send(`
+        const API_CONFIG = {
+            PUBLIC_API_KEY: '${publicKey}',
+            API_URL: window.location.origin + '/api'
+        };
+        if (typeof module !== 'undefined' && module.exports) module.exports = API_CONFIG;
+    `);
 });
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'ok', message: 'Wedding RSVP API is running' });
+    res.json({ status: 'ok', message: 'Wedding Platform API is running 🚀' });
 });
 
-// Get all RSVP responses (for admin) - requires private key
-app.get('/api/rsvp', authenticatePrivateKey, async (req, res) => {
-    try {
-        const result = await pool.query(
-            'SELECT * FROM rsvp_responses ORDER BY created_at DESC'
-        );
-        res.json({
-            success: true,
-            count: result.rows.length,
-            data: result.rows
-        });
-    } catch (error) {
-        console.error('Error fetching RSVPs:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch RSVP responses'
-        });
-    }
+
+// --- ROUTING FOR FRONTEND ---
+
+// Serve the HTML for specific invitation UUID
+// URL will be: domain.com/i/UUID-HERE
+app.get('/i/:uuid', (req, res) => {
+    res.sendFile(path.join(__dirname, '../wedding-invitation.html'));
 });
 
-// Get RSVP statistics - requires private key
-app.get('/api/rsvp/stats', authenticatePrivateKey, async (req, res) => {
-    try {
-        const statsQuery = `
-            SELECT 
-                COUNT(*) as total_responses,
-                SUM(CASE WHEN attendance = 'yes' THEN 1 ELSE 0 END) as attending,
-                SUM(CASE WHEN attendance = 'no' THEN 1 ELSE 0 END) as not_attending,
-                SUM(CASE WHEN attendance = 'yes' THEN guest_count ELSE 0 END) as total_guests
-            FROM rsvp_responses;
-        `;
-
-        const result = await pool.query(statsQuery);
-        res.json({
-            success: true,
-            stats: result.rows[0]
-        });
-    } catch (error) {
-        console.error('Error fetching stats:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to fetch statistics'
-        });
-    }
-});
-
-// Submit RSVP response - requires public key
-app.post('/api/rsvp', authenticatePublicKey, async (req, res) => {
-    const { name, email, phone, attendance, guestCount, message } = req.body;
-
-    // Validation
-    if (!name || !email || !attendance) {
-        return res.status(400).json({
-            success: false,
-            error: 'Name, email, and attendance are required fields'
-        });
-    }
-
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({
-            success: false,
-            error: 'Invalid email format'
-        });
-    }
-
-    // Validate attendance value
-    if (!['yes', 'no'].includes(attendance)) {
-        return res.status(400).json({
-            success: false,
-            error: 'Attendance must be "yes" or "no"'
-        });
-    }
-
-    try {
-        const insertQuery = `
-            INSERT INTO rsvp_responses 
-            (guest_name, guest_email, guest_phone, attendance, guest_count, message)
-            VALUES ($1, $2, $3, $4, $5, $6)
-            RETURNING *;
-        `;
-
-        const values = [
-            name,
-            email,
-            phone || null,
-            attendance,
-            attendance === 'yes' ? (guestCount || 1) : 0,
-            message || null
-        ];
-
-        const result = await pool.query(insertQuery, values);
-
-        console.log(`✅ New RSVP from ${name} (${attendance})`);
-
-        res.status(201).json({
-            success: true,
-            message: 'RSVP submitted successfully',
-            data: result.rows[0]
-        });
-    } catch (error) {
-        console.error('Error submitting RSVP:', error);
-
-        // Check for duplicate email
-        if (error.code === '23505') {
-            return res.status(409).json({
-                success: false,
-                error: 'An RSVP with this email already exists'
-            });
-        }
-
-        res.status(500).json({
-            success: false,
-            error: 'Failed to submit RSVP'
-        });
-    }
-});
-
-// Delete RSVP (for admin) - requires private key
-app.delete('/api/rsvp/:id', authenticatePrivateKey, async (req, res) => {
-    const { id } = req.params;
-
-    try {
-        const result = await pool.query(
-            'DELETE FROM rsvp_responses WHERE id = $1 RETURNING *',
-            [id]
-        );
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({
-                success: false,
-                error: 'RSVP not found'
-            });
-        }
-
-        res.json({
-            success: true,
-            message: 'RSVP deleted successfully',
-            data: result.rows[0]
-        });
-    } catch (error) {
-        console.error('Error deleting RSVP:', error);
-        res.status(500).json({
-            success: false,
-            error: 'Failed to delete RSVP'
-        });
-    }
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
-    res.status(500).json({
-        success: false,
-        error: 'Internal server error'
-    });
-});
-
-// Serve the main HTML file for the root path and any other unhandled paths
-app.get('*', (req, res) => {
+// Serve main page (maybe redirect to a default demo or landing)
+app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../wedding-invitation.html'));
 });
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-    console.log(`🌍 Serving static files from: ${path.join(__dirname, '../')}`);
+    console.log(`🚀 Platform running on port ${PORT}`);
 });
 
-// Graceful shutdown
-process.on('SIGTERM', async () => {
-    console.log('SIGTERM received, closing server...');
-    await pool.end();
-    process.exit(0);
+// Catch-all rules
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../wedding-invitation.html'));
 });

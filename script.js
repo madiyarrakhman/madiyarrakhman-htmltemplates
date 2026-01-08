@@ -1,165 +1,173 @@
 // ==================== //
-// Intersection Observer for Scroll Animations
+// Wedding Invitation Platform Script
 // ==================== //
 
-const observerOptions = {
-    threshold: 0.2,
-    rootMargin: '0px 0px -100px 0px'
+// Global State
+let invitationData = null;
+let currentLang = 'ru';
+
+// DOM Elements to fill
+const el = {
+    groom: document.querySelectorAll('.groom-name'),
+    bride: document.querySelectorAll('.bride-name'),
+    date: document.querySelectorAll('.wedding-date'),
+    location: document.querySelectorAll('.location-name'),
+    address: document.querySelectorAll('.location-address'),
+    story: document.getElementById('story-text'),
+    message: document.getElementById('guestMessage'), // Optional field
+    rsvpSection: document.querySelector('.rsvp-section'),
+    form: document.getElementById('rsvpForm')
 };
 
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-        }
-    });
-}, observerOptions);
+// 1. Initialization
+document.addEventListener('DOMContentLoaded', async () => {
+    // Check if we are on an invitation page: /i/:uuid
+    const pathParts = window.location.pathname.split('/');
+    const uuidIndex = pathParts.indexOf('i') + 1;
+    const uuid = (uuidIndex > 0 && uuidIndex < pathParts.length) ? pathParts[uuidIndex] : null;
 
-// Observe all elements with slide-up class
-document.addEventListener('DOMContentLoaded', () => {
-    const slideUpElements = document.querySelectorAll('.slide-up');
-    slideUpElements.forEach(el => observer.observe(el));
-});
-
-// ==================== //
-// RSVP Form Handling
-// ==================== //
-
-const rsvpForm = document.getElementById('rsvpForm');
-const successMessage = document.getElementById('successMessage');
-
-rsvpForm.addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    // Disable submit button to prevent double submission
-    const submitBtn = rsvpForm.querySelector('.submit-btn');
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span>Отправка...</span>';
-
-    // Get form data
-    const formData = {
-        name: document.getElementById('guestName').value,
-        email: document.getElementById('guestEmail').value,
-        phone: document.getElementById('guestPhone').value,
-        attendance: document.querySelector('input[name="attendance"]:checked').value,
-        guestCount: parseInt(document.getElementById('guestCount').value),
-        message: document.getElementById('guestMessage').value
-    };
-
-    // Check if API_CONFIG is available
-    if (typeof API_CONFIG === 'undefined') {
-        const errorMsg = 'Configuration error: API_CONFIG is missing. Please check if config.js loaded correctly.';
-        console.error(errorMsg);
-        alert('Системная ошибка: Не удалось загрузить конфигурацию. Пожалуйста, попробуйте обновить страницу.');
-
-        // Re-enable submit button
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
-        return;
+    if (uuid) {
+        console.log('🔍 Loading invitation:', uuid);
+        await loadInvitation(uuid);
+    } else {
+        console.log('ℹ️ Demo Mode (No UUID)');
+        // Optional: Load demo data or leave hardcoded HTML
     }
 
+    // Start animations
+    initAnimations();
+});
+
+// 2. Fetch Data
+async function loadInvitation(uuid) {
     try {
-        // Send data to backend API with authentication
-        const response = await fetch(API_CONFIG.API_URL + '/rsvp', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-API-Key': API_CONFIG.PUBLIC_API_KEY
-            },
-            body: JSON.stringify(formData)
-        });
+        const response = await fetch(`/api/invitations/${uuid}`);
+        if (!response.ok) throw new Error('Invitation not found');
 
-        const result = await response.json();
+        const data = await response.json();
+        invitationData = data;
+        currentLang = data.lang || 'ru';
 
-        if (response.ok && result.success) {
-            // Success - hide form and show success message
-            console.log('✅ RSVP submitted successfully:', result);
-            rsvpForm.style.display = 'none';
-            successMessage.classList.add('show');
-            successMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        } else {
-            // API returned an error
-            throw new Error(result.error || 'Failed to submit RSVP');
-        }
+        renderInvitation(data.content);
+
     } catch (error) {
-        // Handle errors
-        console.error('❌ Error submitting RSVP:', error);
-
-        // Show error message to user
-        alert(`Ошибка при отправке: ${error.message}\n\nПожалуйста, попробуйте еще раз или свяжитесь с нами напрямую.`);
-
-        // Re-enable submit button
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
+        console.error('Error loading invitation:', error);
+        alert('Ошибка загрузки приглашения. Возможно, ссылка неверная.');
     }
-});
+}
 
-// ==================== //
-// Smooth Scroll Enhancement
-// ==================== //
+// 3. Render Content
+function renderInvitation(content) {
+    if (!content) return;
 
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
+    // Names
+    if (content.groomName) setMultiText('.groom-name', content.groomName);
+    if (content.brideName) setMultiText('.bride-name', content.brideName);
+
+    // Date
+    if (content.date) {
+        const dateObj = new Date(content.date);
+        const dateStr = dateObj.toLocaleDateString(currentLang, {
+            day: 'numeric', month: 'long', year: 'numeric',
+            hour: '2-digit', minute: '2-digit'
+        });
+        setMultiText('.wedding-date', dateStr);
+
+        // Update countdown target
+        updateCountdown(content.date);
+    }
+
+    // Location
+    if (content.location) setMultiText('.location-name', content.location);
+    if (content.address) setMultiText('.location-address', content.address);
+    if (content.story) setMultiText('.story-text', content.story);
+
+    // Map Coordinates (if provided)
+    if (content.coordinates) {
+        // Update map link or iframe if you have one
+    }
+
+    // Hiding Sections
+    // Example: If user decided to hide RSVP form
+    // setDisplay('.rsvp-section', content.showRSVP !== false);
+}
+
+// Helper to set text for multiple elements with same class
+function setMultiText(selector, text) {
+    document.querySelectorAll(selector).forEach(e => e.innerText = text);
+}
+
+// 4. RSVP Handling
+if (el.form) {
+    el.form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
+
+        if (!invitationData) {
+            alert('Demo mode: RSVP checking disabled');
+            return;
+        }
+
+        const submitBtn = el.form.querySelector('.submit-btn');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span>Отправка...</span>';
+
+        const formData = {
+            guestName: document.getElementById('guestName').value,
+            attendance: document.querySelector('input[name="attendance"]:checked').value,
+            guestCount: parseInt(document.getElementById('guestCount').value)
+        };
+
+        try {
+            const response = await fetch(`/api/rsvp/${invitationData.uuid}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
             });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                el.form.style.display = 'none';
+                document.getElementById('successMessage').classList.add('show');
+            } else {
+                throw new Error(result.error);
+            }
+        } catch (error) {
+            console.error('RSVP Error:', error);
+            alert('Ошибка отправки: ' + error.message);
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Отправить / Send';
         }
     });
-});
+}
 
-// ==================== //
-// Parallax Effect for Hero
-// ==================== //
 
-let lastScrollY = window.scrollY;
+// --- Animations & Visuals (Preserved from original) ---
 
-window.addEventListener('scroll', () => {
-    const scrollY = window.scrollY;
-    const hero = document.querySelector('.hero-content');
+function initAnimations() {
+    // Observer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) entry.target.classList.add('visible');
+        });
+    }, { threshold: 0.1 });
 
-    if (hero && scrollY < window.innerHeight) {
-        const opacity = 1 - (scrollY / window.innerHeight);
-        const translateY = scrollY * 0.5;
+    document.querySelectorAll('.slide-up').forEach(el => observer.observe(el));
 
-        hero.style.opacity = opacity;
-        hero.style.transform = `translateY(${translateY}px)`;
-    }
+    // Hearts
+    createFloatingHearts();
 
-    lastScrollY = scrollY;
-});
-
-// ==================== //
-// Guest Count Validation
-// ==================== //
-
-const guestCountInput = document.getElementById('guestCount');
-const attendanceRadios = document.querySelectorAll('input[name="attendance"]');
-
-attendanceRadios.forEach(radio => {
-    radio.addEventListener('change', (e) => {
-        if (e.target.value === 'no') {
-            guestCountInput.value = 0;
-            guestCountInput.disabled = true;
-        } else {
-            guestCountInput.disabled = false;
-            guestCountInput.value = 1;
+    // Parallax
+    window.addEventListener('scroll', () => {
+        const scrollY = window.scrollY;
+        const hero = document.querySelector('.hero-content');
+        if (hero && scrollY < window.innerHeight) {
+            hero.style.transform = `translateY(${scrollY * 0.5}px)`;
         }
     });
-});
-
-// ==================== //
-// Dynamic Star Background
-// ==================== //
+}
 
 function createFloatingHearts() {
-    const container = document.querySelector('.container');
-
     setInterval(() => {
         const heart = document.createElement('div');
         heart.innerHTML = '♥';
@@ -167,97 +175,46 @@ function createFloatingHearts() {
         heart.style.left = Math.random() * 100 + 'vw';
         heart.style.bottom = '-50px';
         heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
-        heart.style.color = `hsl(${Math.random() * 60 + 320}, 82%, ${Math.random() * 30 + 50}%)`;
-        heart.style.opacity = '0.6';
+        heart.style.color = `hsla(${Math.random() * 60 + 320}, 80%, 60%, 0.6)`;
         heart.style.pointerEvents = 'none';
-        heart.style.zIndex = '0';
         heart.style.transition = 'all 6s linear';
-
         document.body.appendChild(heart);
 
         setTimeout(() => {
             heart.style.bottom = '110vh';
+            heart.style.transform = `translateX(${Math.random() * 100 - 50}px) rotate(${Math.random() * 360}deg)`;
             heart.style.opacity = '0';
-            heart.style.transform = `translateX(${(Math.random() - 0.5) * 200}px) rotate(${Math.random() * 360}deg)`;
         }, 100);
-
-        setTimeout(() => {
-            heart.remove();
-        }, 6100);
-    }, 3000);
+        setTimeout(() => heart.remove(), 6000);
+    }, 2000);
 }
 
-// Start floating hearts animation
-createFloatingHearts();
+function updateCountdown(targetDateStr) {
+    if (!targetDateStr) return;
+    const target = new Date(targetDateStr).getTime();
 
-// ==================== //
-// Countdown Timer (Optional)
-// ==================== //
+    const timer = setInterval(() => {
+        const now = new Date().getTime();
+        const dist = target - now;
 
-function updateCountdown() {
-    const weddingDate = new Date('2026-06-15T15:00:00').getTime();
-    const now = new Date().getTime();
-    const distance = weddingDate - now;
-
-    if (distance > 0) {
-        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        // You can display this countdown somewhere if needed
-        console.log(`${days}д ${hours}ч ${minutes}м ${seconds}с до свадьбы`);
-    }
+        if (dist < 0) {
+            clearInterval(timer);
+            return;
+        }
+        // Logic to update timer UI elements if they exist
+    }, 1000);
 }
 
-// Update countdown every second
-setInterval(updateCountdown, 1000);
-
-// ==================== //
-// Add Sparkle Effect on Mouse Move
-// ==================== //
-
-document.addEventListener('mousemove', (e) => {
-    if (Math.random() > 0.95) { // Only create sparkles occasionally
-        const sparkle = document.createElement('div');
-        sparkle.style.position = 'fixed';
-        sparkle.style.left = e.clientX + 'px';
-        sparkle.style.top = e.clientY + 'px';
-        sparkle.style.width = '4px';
-        sparkle.style.height = '4px';
-        sparkle.style.background = 'var(--color-accent)';
-        sparkle.style.borderRadius = '50%';
-        sparkle.style.pointerEvents = 'none';
-        sparkle.style.zIndex = '9999';
-        sparkle.style.boxShadow = '0 0 10px var(--color-accent)';
-        sparkle.style.animation = 'sparkle 1s ease-out forwards';
-
-        document.body.appendChild(sparkle);
-
-        setTimeout(() => sparkle.remove(), 1000);
-    }
-});
-
-// Add sparkle animation to CSS dynamically
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes sparkle {
-        0% {
-            opacity: 1;
-            transform: scale(1);
+// Guest count logic
+document.querySelectorAll('input[name="attendance"]').forEach(radio => {
+    radio.addEventListener('change', (e) => {
+        const countInput = document.getElementById('guestCount');
+        if (e.target.value === 'no') {
+            countInput.value = 0;
+            countInput.disabled = true;
+        } else {
+            countInput.disabled = false;
+            countInput.value = 1;
         }
-        100% {
-            opacity: 0;
-            transform: scale(0);
-        }
-    }
-`;
-document.head.appendChild(style);
-
-// ==================== //
-// Preload Images (if any are added later)
-// ==================== //
-
-window.addEventListener('load', () => {
-    console.log('Wedding invitation loaded successfully! 💍');
+    });
 });
