@@ -12,6 +12,9 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy for rate limiting (needed on DigitalOcean)
+app.set('trust proxy', 1);
+
 // Security: Enforce JWT_SECRET in production
 if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'super-secret-wedding-key')) {
     console.error('FATAL ERROR: JWT_SECRET must be set correctly in production!');
@@ -56,7 +59,12 @@ const sanitize = (str) => {
 // PostgreSQL connection
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+    connectionTimeoutMillis: 10000, // 10 seconds timeout
+});
+
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
 });
 
 // Admin Auth Middleware
