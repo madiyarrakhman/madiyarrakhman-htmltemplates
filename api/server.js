@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
+const path = require('path'); // Add path module
 require('dotenv').config();
 
 const app = express();
@@ -9,6 +10,31 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the ROOT directory (up one level from api/)
+// This makes wedding-invitation.html, styles.css, etc. accessible
+app.use(express.static(path.join(__dirname, '../')));
+
+// Dynamic Config Endpoint ⚡️
+// This allows frontend to get keys without build-time injection
+app.get('/config.js', (req, res) => {
+    // Prefer FRONTEND_PUBLIC_KEY, fallback to PUBLIC_API_KEY
+    const publicKey = process.env.FRONTEND_PUBLIC_KEY || process.env.PUBLIC_API_KEY || 'YOUR_PUBLIC_KEY_HERE';
+
+    res.setHeader('Content-Type', 'application/javascript');
+    res.send(`
+// API Configuration (Generated Dynamically)
+const API_CONFIG = {
+    PUBLIC_API_KEY: '${publicKey}',
+    API_URL: window.location.origin + '/api'
+};
+
+// Export for use in other scripts
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = API_CONFIG;
+}
+    `);
+});
 
 // API Key Authentication Middleware
 const authenticatePublicKey = (req, res, next) => {
@@ -277,10 +303,16 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Serve the main HTML file for the root path and any other unhandled paths
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../wedding-invitation.html'));
+});
+
 // Start server
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
     console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
+    console.log(`🌍 Serving static files from: ${path.join(__dirname, '../')}`);
 });
 
 // Graceful shutdown
