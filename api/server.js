@@ -9,7 +9,6 @@ const PORT = process.env.PORT || 3000;
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static('../')); // Serve static files from root
 
 // API Key Authentication Middleware
 const authenticatePublicKey = (req, res, next) => {
@@ -53,9 +52,12 @@ const authenticatePrivateKey = (req, res, next) => {
 };
 
 // PostgreSQL connection pool
+// Always use SSL for DigitalOcean Managed Databases
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+    ssl: {
+        rejectUnauthorized: false
+    }
 });
 
 // Initialize database table
@@ -83,6 +85,33 @@ const initDB = async () => {
 
 // Initialize DB on startup
 initDB();
+
+// Root endpoint to verify API is running
+app.get('/api', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'Wedding RSVP API is running 🚀',
+        version: '1.0.0'
+    });
+});
+
+// Root endpoint for / (in case stripped)
+app.get('/', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'Wedding RSVP API is running 🚀 (Root)',
+        version: '1.0.0'
+    });
+});
+
+// Root endpoint to verify API is running
+app.get('/api', (req, res) => {
+    res.json({
+        status: 'ok',
+        message: 'Wedding RSVP API is running 🚀',
+        version: '1.0.0'
+    });
+});
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {

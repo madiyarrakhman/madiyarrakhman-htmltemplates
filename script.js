@@ -47,9 +47,21 @@ rsvpForm.addEventListener('submit', async (e) => {
         message: document.getElementById('guestMessage').value
     };
 
+    // Check if API_CONFIG is available
+    if (typeof API_CONFIG === 'undefined') {
+        const errorMsg = 'Configuration error: API_CONFIG is missing. Please check if config.js loaded correctly.';
+        console.error(errorMsg);
+        alert('Системная ошибка: Не удалось загрузить конфигурацию. Пожалуйста, попробуйте обновить страницу.');
+
+        // Re-enable submit button
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+        return;
+    }
+
     try {
         // Send data to backend API with authentication
-        const response = await fetch('/api/rsvp', {
+        const response = await fetch(API_CONFIG.API_URL + '/rsvp', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

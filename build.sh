@@ -31,4 +31,8 @@ if (typeof module !== 'undefined' && module.exports) {
 EOF
 
 echo "✅ config.js generated with FRONTEND_PUBLIC_KEY"
+echo "📄 Content preview:"
+cat config.js
+echo "📂 Directory listing:"
+ls -la
 echo "✅ Build complete!"
