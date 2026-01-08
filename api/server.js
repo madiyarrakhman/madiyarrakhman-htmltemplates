@@ -70,7 +70,9 @@ if (!isLocal) {
     poolConfig.ssl = {
         rejectUnauthorized: false
     };
-    console.log('🛡️ SSL Mode: Enabled (rejectUnauthorized: false) for Remote DB');
+    // Force allow self-signed certificates globally for node-postgres
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    console.log('🛡️ SSL Mode: Enabled (OVERRIDE: rejectUnauthorized: false)');
 } else {
     poolConfig.ssl = false;
     console.log('🏠 SSL Mode: Disabled for Local DB');
@@ -190,7 +192,8 @@ app.get('/api/admin/invitations', authenticateAdmin, async (req, res) => {
         `);
         res.json(result.rows);
     } catch (error) {
-        res.status(500).json({ error: 'Database error' });
+        console.error('Fetch Invites Error:', error);
+        res.status(500).json({ error: 'Database error', details: error.message });
     }
 });
 
@@ -206,7 +209,8 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
         `);
         res.json(result.rows[0]);
     } catch (error) {
-        res.status(500).json({ error: 'Database error' });
+        console.error('Stats Error:', error);
+        res.status(500).json({ error: 'Database error', details: error.message });
     }
 });
 
@@ -266,7 +270,8 @@ app.get('/api/invitations/:uuid', async (req, res) => {
         if (result.rows.length === 0) return res.status(404).json({ error: 'Not found' });
         res.json(result.rows[0]);
     } catch (error) {
-        res.status(500).json({ error: 'Database error' });
+        console.error('Get Invite Error:', error);
+        res.status(500).json({ error: 'Database error', details: error.message });
     }
 });
 
