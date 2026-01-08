@@ -252,6 +252,12 @@
     </div>
 
     <script>
+        function escapeHTML(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
         async function loadData() {
             try {
                 // Check auth
@@ -268,8 +274,8 @@
                 const tbody = document.getElementById('inviteList');
                 tbody.innerHTML = invites.map(i => `
                     <tr>
-                        <td>${i.phone_number}</td>
-                        <td><span class="badge">${i.lang}</span></td>
+                        <td>${escapeHTML(i.phone_number)}</td>
+                        <td><span class="badge">${escapeHTML(i.lang)}</span></td>
                         <td>${i.rsvp_count}</td>
                         <td>${i.approved_guests || 0}</td>
                         <td>

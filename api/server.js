@@ -11,6 +11,12 @@ require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Security: Enforce JWT_SECRET in production
+if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'super-secret-wedding-key')) {
+    console.error('FATAL ERROR: JWT_SECRET must be set correctly in production!');
+    process.exit(1);
+}
 const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-wedding-key';
 
 // Security Middleware
@@ -19,20 +25,33 @@ app.use(helmet({
 }));
 app.use(cookieParser());
 
-// Rate Limiting
-const limiter = rateLimit({
+// Rate Limiting - General API
+const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
     standardHeaders: true,
-    legacyHeaders: false,
     message: { error: 'Too many requests, please try again later.' }
 });
-app.use('/api/', limiter);
+
+// Stricter Rate Limiting - Login (Prevent Brute Force)
+const loginLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 10, // 10 attempts per hour
+    message: { error: 'Too many login attempts. Please try again in an hour.' }
+});
+
+app.use('/api/', generalLimiter);
 
 // Standard Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50kb' })); // Protection against large Payload DoS
 app.use(express.static(path.join(__dirname, '../')));
+
+// Validation Utility (Simple XSS protection)
+const sanitize = (str) => {
+    if (typeof str !== 'string') return str;
+    return str.replace(/[<>]/g, '');
+};
 
 // PostgreSQL connection
 const pool = new Pool({
@@ -106,8 +125,11 @@ initDB();
 // --- ADMIN API ---
 
 // Admin Login
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', loginLimiter, (req, res) => {
     const { username, password } = req.body;
+
+    if (!username || !password) return res.status(400).json({ error: 'Credentials required' });
+
     const adminUser = process.env.ADMIN_USERNAME || 'admin';
     const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
 
@@ -116,6 +138,7 @@ app.post('/api/admin/login', (req, res) => {
         res.cookie('admin_token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
             maxAge: 24 * 60 * 60 * 1000
         });
         return res.json({ success: true, token });
@@ -166,8 +189,12 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
 
 // Admin Create Invitation
 app.post('/api/admin/invitations', authenticateAdmin, async (req, res) => {
-    const { phoneNumber, templateCode, lang, content } = req.body;
+    let { phoneNumber, templateCode, lang, content } = req.body;
     if (!phoneNumber || !content) return res.status(400).json({ error: 'Missing fields' });
+
+    // Sanitize basic fields
+    phoneNumber = sanitize(phoneNumber);
+    lang = sanitize(lang);
 
     try {
         const result = await pool.query(
@@ -184,15 +211,17 @@ app.post('/api/admin/invitations', authenticateAdmin, async (req, res) => {
 
 // --- PUBLIC API ---
 
-// Create Invitation
+// Create Invitation (System/API Key)
 app.post('/api/invitations', async (req, res) => {
     const apiKey = req.headers['x-api-key'];
     if (apiKey !== process.env.PRIVATE_API_KEY) {
         return res.status(403).json({ error: 'Forbidden' });
     }
 
-    const { phoneNumber, templateCode, lang, content } = req.body;
+    let { phoneNumber, templateCode, lang, content } = req.body;
     if (!phoneNumber || !content) return res.status(400).json({ error: 'Missing fields' });
+
+    phoneNumber = sanitize(phoneNumber);
 
     try {
         const result = await pool.query(
@@ -221,7 +250,11 @@ app.get('/api/invitations/:uuid', async (req, res) => {
 // Submit RSVP
 app.post('/api/rsvp/:uuid', async (req, res) => {
     const { uuid } = req.params;
-    const { guestName, attendance, guestCount } = req.body;
+    let { guestName, attendance, guestCount } = req.body;
+
+    // Sanitize guest name to prevent XSS in admin panel
+    guestName = sanitize(guestName);
+
     try {
         await pool.query(
             `INSERT INTO rsvp_responses (invitation_uuid, guest_name, attendance, guest_count)
