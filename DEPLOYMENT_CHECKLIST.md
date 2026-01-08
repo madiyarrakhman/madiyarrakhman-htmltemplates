@@ -16,18 +16,18 @@
 
 ### 2. Add Secrets (CRITICAL!)
 
-#### For API Component:
-- [ ] Add `PUBLIC_API_KEY` (value: `pk_...`)
-  - ✅ Check "Encrypt"
-  - Scope: Run and Build Time
-- [ ] Add `PRIVATE_API_KEY` (value: `sk_...`)
-  - ✅ Check "Encrypt"  
-  - Scope: Run Time
+Добавьте в **App-Level Environment Variables**:
 
-#### For Frontend Component:
-- [ ] Add `PUBLIC_API_KEY` (value: `pk_...`)
+- [ ] `PUBLIC_API_KEY` (value: `pk_...`)
   - ✅ Check "Encrypt"
-  - Scope: Build Time
+  
+- [ ] `PRIVATE_API_KEY` (value: `sk_...`)
+  - ✅ Check "Encrypt"
+  
+- [ ] `FRONTEND_PUBLIC_KEY` (value: `pk_...`) ← Тот же ключ!
+  - ✅ Check "Encrypt"
+
+⚠️ **Важно:** `FRONTEND_PUBLIC_KEY` должен быть таким же, как `PUBLIC_API_KEY`!
 
 ### 3. Launch
 - [ ] Review settings
@@ -41,17 +41,27 @@
 
 ## Your Keys
 
-**Public Key:**
+**Public Key (для API и Frontend):**
 ```
 pk_e794970a30ba3e1a14a1a72c8bc16be913094a3cc87c2bfa91fc6436b95d661a
 ```
 
-**Private Key:**
+**Private Key (только для API):**
 ```
 sk_fbc7ee7607d57456f78dc6c5c404f58e2cd6fe7834b03b8332ad6b5237a358ea
 ```
 
 ⚠️ **Keep private key secret!**
+
+### Что добавить в DigitalOcean:
+
+В **App-Level Environment Variables** добавьте **3 переменные**:
+
+1. `PUBLIC_API_KEY` = `pk_e794970a30ba3e1a14a1a72c8bc16be913094a3cc87c2bfa91fc6436b95d661a`
+2. `PRIVATE_API_KEY` = `sk_fbc7ee7607d57456f78dc6c5c404f58e2cd6fe7834b03b8332ad6b5237a358ea`
+3. `FRONTEND_PUBLIC_KEY` = `pk_e794970a30ba3e1a14a1a72c8bc16be913094a3cc87c2bfa91fc6436b95d661a` (тот же что и PUBLIC_API_KEY)
+
+Все три с галочкой ✅ Encrypt
 
 ## Testing Admin Endpoints
 

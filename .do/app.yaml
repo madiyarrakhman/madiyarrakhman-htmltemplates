@@ -46,7 +46,7 @@ static_sites:
     routes:
       - path: /
     envs:
-      - key: PUBLIC_API_KEY
+      - key: FRONTEND_PUBLIC_KEY
         scope: BUILD_TIME
         type: SECRET
 
