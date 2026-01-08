@@ -2,13 +2,30 @@ const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
 const path = require('path');
+const helmet = require('helmet'); // Security Headers
+const rateLimit = require('express-rate-limit'); // Denial of Service protection
 const crypto = require('crypto'); // For UUID generation
 require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+// Security Middleware
+app.use(helmet({
+    contentSecurityPolicy: false, // Disabled for simplicity with inline scripts/styles
+}));
+
+// Rate Limiting (limit each IP to 100 requests per 15 minutes)
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: 'Too many requests, please try again later.' }
+});
+app.use('/api/', limiter); // Apply to API routes
+
+// Standard Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -24,47 +41,42 @@ const pool = new Pool({
 // Initialize database tables
 const initDB = async () => {
     try {
-        // Templates Table
+        // ... Tables initialization code ...
+        // Keeping it short for clarity, assuming schema is stable
+        // (You can copy the schema creation code from previous steps if needed here, 
+        //  but for now I will rely on existing DB or assume it runs once successfully)
+
         await pool.query(`
             CREATE TABLE IF NOT EXISTS templates (
                 id SERIAL PRIMARY KEY,
-                code VARCHAR(50) UNIQUE NOT NULL, -- e.g., 'classic-rose', 'starry-night'
+                code VARCHAR(50) UNIQUE NOT NULL,
                 name VARCHAR(100) NOT NULL,
                 is_active BOOLEAN DEFAULT true
             );
         `);
-
-        // Insert default template if not exists
         await pool.query(`
             INSERT INTO templates (code, name) 
             VALUES ('starry-night', 'Звездная ночь') 
             ON CONFLICT (code) DO NOTHING;
         `);
-
-        // Invitations Table
-        // UUID is the unique link for the guest
-        // phone_number links invites to a user
-        // content contains all dynamic text (names, dates, location)
         await pool.query(`
             CREATE TABLE IF NOT EXISTS invitations (
                 id SERIAL PRIMARY KEY,
                 uuid UUID UNIQUE DEFAULT gen_random_uuid(),
                 phone_number VARCHAR(50) NOT NULL,
                 template_code VARCHAR(50) REFERENCES templates(code),
-                lang VARCHAR(10) DEFAULT 'ru', -- 'ru', 'kk', 'en'
+                lang VARCHAR(10) DEFAULT 'ru',
                 content JSONB NOT NULL, 
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
-
-        // RSVP Responses (linked to invitation)
         await pool.query(`
             CREATE TABLE IF NOT EXISTS rsvp_responses (
                 id SERIAL PRIMARY KEY,
                 invitation_uuid UUID REFERENCES invitations(uuid),
                 guest_name VARCHAR(255),
-                attendance VARCHAR(10) NOT NULL, -- 'yes', 'no'
+                attendance VARCHAR(10) NOT NULL,
                 guest_count INTEGER DEFAULT 1,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
@@ -80,10 +92,9 @@ initDB();
 
 // --- API ENDPOINTS ---
 
-// 1. Create Invitation (POST /api/invitations)
-// Creates a new link for a specific phone number
+// 1. Create Invitation
 app.post('/api/invitations', async (req, res) => {
-    // Auth check should be here (simple key check for now)
+    // Auth check FIRST
     const apiKey = req.headers['x-api-key'];
     if (apiKey !== process.env.PRIVATE_API_KEY) {
         return res.status(403).json({ error: 'Admin access required to create invitations' });
@@ -122,8 +133,7 @@ app.post('/api/invitations', async (req, res) => {
     }
 });
 
-// 2. Get Invitation Data (GET /api/invitations/:uuid)
-// Public endpoint for rendering the page
+// 2. Get Invitation Data
 app.get('/api/invitations/:uuid', async (req, res) => {
     const { uuid } = req.params;
 
@@ -144,8 +154,7 @@ app.get('/api/invitations/:uuid', async (req, res) => {
     }
 });
 
-// 3. Update Invitation (PUT /api/invitations/:uuid)
-// Change names, date, location etc.
+// 3. Update Invitation
 app.put('/api/invitations/:uuid', async (req, res) => {
     const apiKey = req.headers['x-api-key'];
     if (apiKey !== process.env.PRIVATE_API_KEY) {
@@ -156,8 +165,6 @@ app.put('/api/invitations/:uuid', async (req, res) => {
     const { content, lang, templateCode } = req.body;
 
     try {
-        // We use COALESCE to keep existing values if new ones specifically null/undefined
-        // But for JSONB 'content', we'll merge or replace. Here we replace.
         const result = await pool.query(
             `UPDATE invitations 
              SET content = $1, lang = $2, template_code = $3, updated_at = CURRENT_TIMESTAMP
@@ -177,13 +184,12 @@ app.put('/api/invitations/:uuid', async (req, res) => {
     }
 });
 
-// 4. Submit RSVP (POST /api/rsvp/:uuid)
+// 4. Submit RSVP
 app.post('/api/rsvp/:uuid', async (req, res) => {
     const { uuid } = req.params;
     const { guestName, attendance, guestCount } = req.body;
 
     try {
-        // Verify UUID exists first
         const check = await pool.query('SELECT uuid FROM invitations WHERE uuid = $1', [uuid]);
         if (check.rows.length === 0) {
             return res.status(404).json({ error: 'Invalid invitation link' });
@@ -202,7 +208,7 @@ app.post('/api/rsvp/:uuid', async (req, res) => {
     }
 });
 
-// 5. Config Endpoint (Dynamic)
+// 5. Config Endpoint
 app.get('/config.js', (req, res) => {
     const publicKey = process.env.FRONTEND_PUBLIC_KEY || process.env.PUBLIC_API_KEY || 'no-key';
     res.setHeader('Content-Type', 'application/javascript');
@@ -215,31 +221,42 @@ app.get('/config.js', (req, res) => {
     `);
 });
 
-// Health check endpoint
+// Health check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', message: 'Wedding Platform API is running 🚀' });
 });
 
 
-// --- ROUTING FOR FRONTEND ---
+// FRONTEND ROUTING
 
-// Serve the HTML for specific invitation UUID
-// URL will be: domain.com/i/UUID-HERE
+// Serve Invitation Page
 app.get('/i/:uuid', (req, res) => {
     res.sendFile(path.join(__dirname, '../wedding-invitation.html'));
 });
 
-// Serve main page (maybe redirect to a default demo or landing)
+// Serve Main Page
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '../wedding-invitation.html'));
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`🚀 Platform running on port ${PORT}`);
-});
-
-// Catch-all rules
+// Catch-all
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../wedding-invitation.html'));
 });
+
+// Start Server (Conditional for Tests)
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`🚀 Platform running on port ${PORT}`);
+    });
+}
+
+// Graceful Shutdown
+process.on('SIGTERM', async () => {
+    console.log('SIGTERM received, closing server...');
+    await pool.end();
+    process.exit(0);
+});
+
+// Export
+module.exports = { app, pool };
