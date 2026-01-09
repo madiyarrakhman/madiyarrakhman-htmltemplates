@@ -4,7 +4,7 @@
     "description": "Full stack wedding invitation app",
     "main": "api/dist/server.js",
     "scripts": {
-        "start": "cd backend && go run cmd/server/main.go",
+        "start": "echo 'Docker handles start command'",
         "dev": "cd backend && go run cmd/server/main.go",
         "build:frontend": "cd frontend && npm install && npm run build",
         "build": "npm run build:frontend",
