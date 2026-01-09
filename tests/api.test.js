@@ -151,7 +151,7 @@ describe('Wedding Platform Full Integration Tests', () => {
         it('should serve the landing page at root', async () => {
             const res = await request(app).get('/');
             expect(res.statusCode).toEqual(200);
-            expect(res.text).toContain('VibeInvite');
+            expect(res.text).toContain('CardGo');
         });
 
         it('should show 404 for unknown routes', async () => {
