@@ -1,0 +1,15 @@
+.git
+.gitignore
+node_modules
+**/node_modules
+api_backup
+documentation
+migrations
+*.md
+.env
+.agent
+.do
+.agentic
+api/dist
+frontend/dist
+backend/bin

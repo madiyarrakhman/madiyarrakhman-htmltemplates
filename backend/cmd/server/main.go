@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"time"
@@ -84,15 +83,16 @@ func main() {
 
 	r.GET("/s/:shortCode", invHandler.RedirectShortCode)
 
-	// Frontend
+	// Static Files Frontend
 	rootDir := os.Getenv("FRONTEND_DIST")
 	if rootDir == "" {
 		rootDir = filepath.Join("..", "frontend", "dist")
 	}
-	r.StaticFS("/assets", http.Dir(filepath.Join(rootDir, "assets")))
-	r.StaticFile("/favicon.ico", filepath.Join(rootDir, "favicon.ico"))
-	r.StaticFile("/index.html", filepath.Join(rootDir, "index.html"))
 
+	r.Static("/assets", filepath.Join(rootDir, "assets"))
+	r.StaticFile("/favicon.ico", filepath.Join(rootDir, "favicon.ico"))
+
+	// Fallback for SPA
 	r.NoRoute(func(c *gin.Context) {
 		c.File(filepath.Join(rootDir, "index.html"))
 	})
