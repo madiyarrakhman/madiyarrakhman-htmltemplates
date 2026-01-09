@@ -44,8 +44,9 @@ type AdminStats struct {
 
 type InvitationWithStats struct {
 	Invitation
-	RSVPCount      int `json:"rsvpCount"`
-	ApprovedGuests int `json:"approvedGuests"`
+	RSVPCount      int    `json:"rsvpCount"`
+	ApprovedGuests int    `json:"approvedGuests"`
+	TemplateName   string `json:"templateName"`
 }
 
 type InvitationRepository interface {

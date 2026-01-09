@@ -75,10 +75,11 @@ func (r *PostgresAdminRepository) GetStats() (*domain.AdminStats, error) {
 func (r *PostgresAdminRepository) GetInvitationsList() ([]domain.InvitationWithStats, error) {
 	rows, err := r.pool.Query(context.Background(), `
 		SELECT 
-            i.uuid, i.phone_number, i.template_code, i.lang, COALESCE(i.short_code, ''),
+            i.uuid, i.phone_number, i.template_code, t.name, i.lang, COALESCE(i.short_code, ''),
             COALESCE((SELECT COUNT(*) FROM rsvp_responses r WHERE r.invitation_uuid = i.uuid), 0) as rsvp_count,
             COALESCE((SELECT SUM(guest_count) FROM rsvp_responses r WHERE r.invitation_uuid = i.uuid AND r.attendance = 'yes'), 0) as approved_guests
         FROM invitations i
+        LEFT JOIN templates t ON i.template_code = t.code
         ORDER BY i.created_at DESC
 	`)
 	if err != nil {
@@ -89,7 +90,14 @@ func (r *PostgresAdminRepository) GetInvitationsList() ([]domain.InvitationWithS
 	var list []domain.InvitationWithStats
 	for rows.Next() {
 		var i domain.InvitationWithStats
-		_ = rows.Scan(&i.UUID, &i.PhoneNumber, &i.TemplateCode, &i.Lang, &i.ShortCode, &i.RSVPCount, &i.ApprovedGuests)
+		var templateName *string // Handle potential null join, though code ensures code exists
+		_ = rows.Scan(&i.UUID, &i.PhoneNumber, &i.TemplateCode, &templateName, &i.Lang, &i.ShortCode, &i.RSVPCount, &i.ApprovedGuests)
+		if templateName != nil {
+			i.TemplateName = *templateName // Assuming you add TemplateName field to struct or helper
+		} else {
+			// If join fails, fallback to code
+			i.TemplateName = i.TemplateCode
+		}
 		list = append(list, i)
 	}
 	return list, nil
