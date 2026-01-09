@@ -15,8 +15,6 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
 
-	"database/sql"
-
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/infra/api/handlers"
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/infra/api/middleware"
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/infra/database"
@@ -37,8 +35,6 @@ func main() {
 	if err != nil {
 		log.Fatal("Unable to connect to database:", err)
 	}
-	defer pool.Close()
-
 	defer pool.Close()
 
 	// Run Migrations (Goose)
