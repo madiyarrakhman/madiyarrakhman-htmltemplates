@@ -10,8 +10,8 @@
         "start": "node dist/server.js",
         "dev": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' nodemon src/server.ts",
         "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
-        "migrate": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' ts-node src/infrastructure/scripts/migrate.ts",
-        "generate-keys": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' ts-node src/infrastructure/scripts/generate-keys.ts"
+        "migrate": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' node src/infrastructure/scripts/migrate.ts",
+        "generate-keys": "NODE_OPTIONS='--loader ts-node/esm --no-warnings' node src/infrastructure/scripts/generate-keys.ts"
     },
     "keywords": [
         "wedding",
