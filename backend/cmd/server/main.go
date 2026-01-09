@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"log"
 	"os"
@@ -10,12 +11,17 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
+	_ "github.com/jackc/pgx/v5/stdlib" // Standard library driver
 	"github.com/joho/godotenv"
+	"github.com/pressly/goose/v3"
+
+	"database/sql"
 
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/infra/api/handlers"
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/infra/api/middleware"
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/infra/database"
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/usecase"
+	"github.com/madiyarrakhman/wedding-invitation/backend/migrations"
 )
 
 func main() {
@@ -32,6 +38,32 @@ func main() {
 		log.Fatal("Unable to connect to database:", err)
 	}
 	defer pool.Close()
+
+	defer pool.Close()
+
+	// Run Migrations (Goose)
+	goose.SetBaseFS(migrations.FS)
+
+	if err := goose.SetDialect("postgres"); err != nil {
+		log.Fatal("Failed to set goose dialect:", err)
+	}
+
+	// We need a stdlib sql.DB instance for goose, but we have pgxpool.
+	// However, goose supports passing a *sql.DB.
+	// We can open a standard sql connection just for migrations.
+	// Or simpler: use "github.com/jackc/pgx/v5/stdlib" to convert pool or config to sql.DB
+	// BUT simplest is just opening a new connection with sql.Open("pgx", dbURL) (requires driver import)
+	// Let's use stdlib adapter.
+
+	db, err := sql.Open("pgx", dbURL) // Requires _ "github.com/jackc/pgx/v5/stdlib"
+	if err != nil {
+		log.Fatal("Failed to open DB for migrations:", err)
+	}
+	defer db.Close()
+
+	if err := goose.Up(db, "."); err != nil {
+		log.Fatal("Failed to run migrations:", err)
+	}
 
 	// 2. Dependencies
 	invRepo := database.NewPostgresInvitationRepository(pool)
