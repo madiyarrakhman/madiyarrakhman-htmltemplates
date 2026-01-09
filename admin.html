@@ -265,6 +265,21 @@
             return div.innerHTML;
         }
 
+        let allTemplates = [];
+
+        function updateTemplateOptions() {
+            const lang = document.getElementById('lang').value;
+            const templateSelect = document.getElementById('templateCode');
+            templateSelect.innerHTML = allTemplates.map(t => {
+                let name = t.nameRu;
+                if (lang === 'kk') name = t.nameKk;
+                if (lang === 'en') name = t.nameEn;
+                return `<option value="${t.code}">${name}</option>`;
+            }).join('');
+        }
+
+        document.getElementById('lang').addEventListener('change', updateTemplateOptions);
+
         async function loadData() {
             try {
                 // Check auth
@@ -278,14 +293,8 @@
 
                 // Load templates
                 const templatesRes = await fetch('/api/admin/templates');
-                const templates = await templatesRes.json();
-                const templateSelect = document.getElementById('templateCode');
-                if (Array.isArray(templates)) {
-                    templateSelect.innerHTML = templates.map(t => `<option value="${t.code}">${t.name}</option>`).join('');
-                } else {
-                    console.error('Templates is not an array:', templates);
-                    templateSelect.innerHTML = '<option value="">Ошибка загрузки шаблонов</option>';
-                }
+                allTemplates = await templatesRes.json();
+                updateTemplateOptions();
 
                 const invitesRes = await fetch('/api/admin/invitations');
                 const invites = await invitesRes.json();

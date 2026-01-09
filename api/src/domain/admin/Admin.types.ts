@@ -23,5 +23,5 @@ export interface AdminInvitationListItemEntity {
 export interface IAdminRepository {
     getInvitationsList(): Promise<AdminInvitationListItemEntity[]>;
     getStats(): Promise<AdminStatsEntity>;
-    getTemplates(): Promise<{ code: string; name: string }[]>;
+    getTemplates(): Promise<{ code: string; nameRu: string; nameKk: string; nameEn: string }[]>;
 }

@@ -7,13 +7,17 @@ export class PostgresAdminRepository implements IAdminRepository {
     async getInvitationsList(): Promise<AdminInvitationListItemEntity[]> {
         const result = await this.pool.query(`
             SELECT i.*, 
-                   t.name as template_name,
+                   CASE 
+                     WHEN i.lang = 'kk' THEN t.name_kk
+                     WHEN i.lang = 'en' THEN t.name_en
+                     ELSE t.name_ru 
+                   END as template_name,
                    COUNT(r.id)::int as rsvp_count,
                    SUM(CASE WHEN r.attendance = 'yes' THEN r.guest_count ELSE 0 END)::int as approved_guests
             FROM invitations i
             LEFT JOIN templates t ON i.template_code = t.code
             LEFT JOIN rsvp_responses r ON i.uuid = r.invitation_uuid
-            GROUP BY i.id, t.name
+            GROUP BY i.id, t.name_ru, t.name_kk, t.name_en
             ORDER BY i.created_at DESC
         `);
 
@@ -51,8 +55,13 @@ export class PostgresAdminRepository implements IAdminRepository {
         };
     }
 
-    async getTemplates(): Promise<{ code: string; name: string }[]> {
-        const result = await this.pool.query('SELECT code, name FROM templates WHERE is_active = true');
-        return result.rows;
+    async getTemplates(): Promise<{ code: string; nameRu: string; nameKk: string; nameEn: string }[]> {
+        const result = await this.pool.query('SELECT code, name_ru, name_kk, name_en FROM templates WHERE is_active = true');
+        return result.rows.map(row => ({
+            code: row.code,
+            nameRu: row.name_ru,
+            nameKk: row.name_kk,
+            nameEn: row.name_en
+        }));
     }
 }
