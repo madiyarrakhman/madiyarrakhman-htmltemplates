@@ -90,6 +90,7 @@ func main() {
 	}
 
 	r.Static("/assets", filepath.Join(rootDir, "assets"))
+	r.Static("/images", filepath.Join(rootDir, "images"))
 	r.StaticFile("/favicon.ico", filepath.Join(rootDir, "favicon.ico"))
 
 	// Fallback for SPA
