@@ -21,10 +21,10 @@ COPY --from=backend-builder /app/backend/main .
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
 # Expose port
-EXPOSE 3008
+EXPOSE 3000
 
 # Environment variables
-ENV PORT=3008
+ENV PORT=3000
 ENV FRONTEND_DIST=./frontend/dist
 
 CMD ["./main"]
