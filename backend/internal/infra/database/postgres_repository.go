@@ -66,16 +66,22 @@ func NewPostgresAdminRepository(pool *pgxpool.Pool) *PostgresAdminRepository {
 
 func (r *PostgresAdminRepository) GetStats() (*domain.AdminStats, error) {
 	var s domain.AdminStats
-	_ = r.pool.QueryRow(context.Background(), "SELECT COUNT(*) FROM invitations").Scan(&s.TotalInvitations)
-	_ = r.pool.QueryRow(context.Background(), "SELECT COUNT(*) FROM rsvp_responses").Scan(&s.TotalRSVPs)
-	_ = r.pool.QueryRow(context.Background(), "SELECT COALESCE(SUM(guest_count), 0) FROM rsvp_responses WHERE attendance = 'yes'").Scan(&s.TotalGuests)
+	if err := r.pool.QueryRow(context.Background(), "SELECT COUNT(*) FROM invitations").Scan(&s.TotalInvitations); err != nil {
+		return nil, err
+	}
+	if err := r.pool.QueryRow(context.Background(), "SELECT COUNT(*) FROM rsvp_responses").Scan(&s.TotalRSVPs); err != nil {
+		return nil, err
+	}
+	if err := r.pool.QueryRow(context.Background(), "SELECT COALESCE(SUM(guest_count), 0) FROM rsvp_responses WHERE attendance = 'yes'").Scan(&s.TotalGuests); err != nil {
+		return nil, err
+	}
 	return &s, nil
 }
 
 func (r *PostgresAdminRepository) GetInvitationsList() ([]domain.InvitationWithStats, error) {
 	rows, err := r.pool.Query(context.Background(), `
 		SELECT 
-            i.uuid, i.phone_number, i.template_code, t.name, i.lang, COALESCE(i.short_code, ''),
+            i.uuid, i.phone_number, i.template_code, t.name_ru, i.lang, COALESCE(i.short_code, ''),
             COALESCE((SELECT COUNT(*) FROM rsvp_responses r WHERE r.invitation_uuid = i.uuid), 0) as rsvp_count,
             COALESCE((SELECT SUM(guest_count) FROM rsvp_responses r WHERE r.invitation_uuid = i.uuid AND r.attendance = 'yes'), 0) as approved_guests
         FROM invitations i
@@ -87,34 +93,43 @@ func (r *PostgresAdminRepository) GetInvitationsList() ([]domain.InvitationWithS
 	}
 	defer rows.Close()
 
-	var list []domain.InvitationWithStats
+	list := []domain.InvitationWithStats{}
 	for rows.Next() {
 		var i domain.InvitationWithStats
-		var templateName *string // Handle potential null join, though code ensures code exists
-		_ = rows.Scan(&i.UUID, &i.PhoneNumber, &i.TemplateCode, &templateName, &i.Lang, &i.ShortCode, &i.RSVPCount, &i.ApprovedGuests)
+		var templateName *string
+		if err := rows.Scan(&i.UUID, &i.PhoneNumber, &i.TemplateCode, &templateName, &i.Lang, &i.ShortCode, &i.RSVPCount, &i.ApprovedGuests); err != nil {
+			return nil, err
+		}
 		if templateName != nil {
-			i.TemplateName = *templateName // Assuming you add TemplateName field to struct or helper
+			i.TemplateName = *templateName
 		} else {
-			// If join fails, fallback to code
 			i.TemplateName = i.TemplateCode
 		}
 		list = append(list, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 	return list, nil
 }
 
 func (r *PostgresAdminRepository) GetTemplates() ([]domain.Template, error) {
-	rows, err := r.pool.Query(context.Background(), "SELECT code, name FROM templates WHERE is_active = true")
+	rows, err := r.pool.Query(context.Background(), "SELECT code, name_ru FROM templates WHERE is_active = true")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var list []domain.Template
+	list := []domain.Template{}
 	for rows.Next() {
 		var t domain.Template
-		_ = rows.Scan(&t.Code, &t.Name)
+		if err := rows.Scan(&t.Code, &t.Name); err != nil {
+			return nil, err
+		}
 		list = append(list, t)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 	return list, nil
 }
