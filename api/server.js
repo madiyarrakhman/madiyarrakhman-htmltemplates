@@ -197,8 +197,8 @@ app.post('/api/admin/invitations', authenticateAdmin, async (req, res) => {
 
     try {
         const result = await pool.query(
-            `INSERT INTO invitations (phone_number, template_code, lang, groom_name, bride_name, event_date, event_location, content) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+            `INSERT INTO invitations (phone_number, template_code, lang, groom_name, bride_name, event_date, event_location, content, short_code) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, generate_short_code()) RETURNING *`,
             [phoneNumber, templateCode || 'starry-night', lang || 'ru', groomName, brideName, eventDate, eventLocation, JSON.stringify(content || {})]
         );
         res.status(201).json({ success: true, invitation: result.rows[0] });
@@ -230,19 +230,21 @@ app.post('/api/invitations', async (req, res) => {
 
     try {
         const result = await pool.query(
-            `INSERT INTO invitations (phone_number, template_code, lang, groom_name, bride_name, event_date, event_location, content) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+            `INSERT INTO invitations (phone_number, template_code, lang, groom_name, bride_name, event_date, event_location, content, short_code) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, generate_short_code()) RETURNING *`,
             [phoneNumber, templateCode || 'starry-night', lang || 'ru', groomName, brideName, eventDate, eventLocation, JSON.stringify(content || {})]
         );
 
         const invitation = result.rows[0];
         const protocol = req.protocol;
         const host = req.get('host');
+        const shortUrl = `${protocol}://${host}/s/${invitation.short_code}`;
         const fullUrl = `${protocol}://${host}/i/${invitation.uuid}`;
 
         res.status(201).json({
             success: true,
             invitation: invitation,
+            shortUrl: shortUrl,
             fullUrl: fullUrl
         });
     } catch (error) {
@@ -327,6 +329,21 @@ app.get('/i/:uuid', async (req, res) => {
         res.status(500).send('Internal Server Error');
     }
 });
+
+// Short URL Redirect
+app.get('/s/:shortCode', async (req, res) => {
+    const { shortCode } = req.params;
+    try {
+        const result = await pool.query('SELECT uuid FROM invitations WHERE short_code = $1', [shortCode]);
+        if (result.rows.length === 0) {
+            return res.status(404).sendFile(path.join(__dirname, '../404.html'));
+        }
+        res.redirect(`/i/${result.rows[0].uuid}`);
+    } catch (err) {
+        res.status(500).send('Internal Server Error');
+    }
+});
+
 app.get('/template/silk-ivory', (req, res) => res.sendFile(path.join(__dirname, '../wedding-silk-ivory.html')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../landing.html')));
 app.get('*', (req, res) => res.status(404).sendFile(path.join(__dirname, '../404.html')));

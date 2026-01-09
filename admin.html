@@ -293,7 +293,7 @@
                             <td>${i.rsvp_count}</td>
                             <td>${i.approved_guests || 0}</td>
                             <td>
-                                <span class="copy-link" onclick="copyLink('${i.uuid}')">Копировать ссылку</span>
+                                <span class="copy-link" onclick="copyLink('${i.short_code}', '${i.uuid}')">Копировать короткую ссылку</span>
                             </td>
                         </tr>
                     `).join('');
@@ -305,10 +305,11 @@
             }
         }
 
-        function copyLink(uuid) {
-            const url = window.location.origin + '/i/' + uuid;
+        function copyLink(shortCode, uuid) {
+            const code = shortCode && shortCode !== 'null' ? 's/' + shortCode : 'i/' + uuid;
+            const url = window.location.origin + '/' + code;
             navigator.clipboard.writeText(url);
-            alert('Ссылка скопирована!');
+            alert('Ссылка скопирована: ' + url);
         }
 
         async function logout() {
