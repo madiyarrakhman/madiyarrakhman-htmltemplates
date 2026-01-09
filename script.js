@@ -143,7 +143,9 @@ function translateUI(t) {
 
     // --- Sections Titles ---
     // We try to find specific section headers by ID first, then fall back to class
-    const storyTitle = document.querySelector('.story-section .section-title') || document.querySelector('section:nth-of-type(2) .section-title');
+    // For Story section in Silk template (it has no ID, but it's the first section after header)
+    const storyTitle = document.querySelector('.story-section .section-title') ||
+        document.querySelector('header + section .section-title');
     if (storyTitle) storyTitle.innerText = t.story_title;
 
     const galleryTitle = document.querySelector('#gallery .section-title');
