@@ -191,6 +191,28 @@ function initAnimations() {
             hero.style.transform = `translateY(${scrollY * 0.5}px)`;
         }
     });
+
+    // Gallery Auto-slide
+    const gallery = document.querySelector('.gallery-slider');
+    if (gallery) {
+        const step = 1;
+        const delay = 30;
+        let slideInterval;
+
+        function startAutoPlay() {
+            slideInterval = setInterval(() => {
+                gallery.scrollLeft += step;
+                if (gallery.scrollLeft >= (gallery.scrollWidth - gallery.clientWidth - 1)) {
+                    gallery.scrollLeft = 0;
+                }
+            }, delay);
+        }
+
+        startAutoPlay();
+        gallery.addEventListener('mouseenter', () => clearInterval(slideInterval));
+        gallery.addEventListener('mouseleave', startAutoPlay);
+        gallery.addEventListener('touchstart', () => clearInterval(slideInterval));
+    }
 }
 
 function createFloatingHearts() {

@@ -69,57 +69,157 @@
             justify-content: center;
             text-align: center;
             position: relative;
-            background: radial-gradient(circle at center, #ffffff 0%, var(--color-silk) 100%);
+            background:
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(249, 247, 242, 0.6)),
+                url('/images/silk_ivory_bg.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             overflow: hidden;
+            padding: 2rem;
         }
 
-        .hero::before {
+        .hero::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNjNWEwNTkiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djJoLTR2Mmg0djJoMnYtMmg0di0yaC00di0yaC0yek0yMCAzMHYyaDR2Mmg0di0yaC00di0yaC0yem0wIDQwVjY2aC00di0yaDR2LTJoMnYyaDR2MmgtNHYyaC0yek0wIDMwaDQuMmwtNC4yIDQuMnY0LjJMOC40IDMwaDQuMkwwIDQyLjZ2NS4ybDguOC04LjhoNC44TDQgNTIuOHY0LjhsOC44LTguOGg0LjhMOCA2MEgwaDYwek0wIDB2NS40TDUuNCAwSDB6bTAsMjB2NS40bDkuNC05LjRoLTQuNEwwIDE1LjR2NC42em01NC42IDBMMjAgNTQuNnY0LjRsNC40IDEuNkw2MCAyNS40di01LjR6TTM1LjQgMCAwIDM1LjR2NC40TDQwIDBzaC00LjZ6TTkuNCAwTDAgOS40di42TDExIDB6TTU2IDBMMjAgMzZ2NmwuNi0uNkw2MCA0LjRWMHogTTUwIDBMMjAgMzB2NmwuNi0uNkw2MCA0LjRWMHpNNTQgMEwyMCAzNHY2bC42LS42TDYwIDguNFYweiBNNDAgMEwyMCAyMHY2bC42LS42TDYwIDE0LjRWMHpNMjAgMEwyMCAwdjZMLjYtLjZMNjAgMjQuNFYweiIvPjwvZz48L2c+PC9zdmc+');
-            opacity: 0.3;
+            inset: 30px;
+            border: 1px solid rgba(197, 160, 89, 0.2);
             pointer-events: none;
+            z-index: 1;
         }
 
         .hero-content {
             z-index: 2;
             padding: 2rem;
-            animation: fadeInScale 1.8s ease-out;
+            animation: fadeInScale 2.2s cubic-bezier(0.16, 1, 0.3, 1);
+            max-width: 1000px;
         }
 
-        .main-title {
-            font-family: var(--font-display);
-            font-size: clamp(3rem, 10vw, 6rem);
-            font-weight: 400;
-            margin-bottom: 0.5rem;
-            letter-spacing: -1px;
-        }
-
-        .names-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .ampersand {
-            font-family: var(--font-display);
-            font-size: 0.5em;
-            font-style: italic;
-            margin: 1rem 0;
+        .hero-ornament {
+            font-size: 2.5rem;
+            color: var(--color-gold);
+            margin-bottom: 2rem;
             opacity: 0.7;
+            display: block;
         }
 
         .hero-date {
             font-family: var(--font-accent);
             text-transform: uppercase;
-            letter-spacing: 5px;
-            font-size: 0.9rem;
-            margin-top: 2rem;
+            letter-spacing: 0.6rem;
+            font-size: 1rem;
+            margin-bottom: 3rem;
+            color: var(--color-text-soft);
+            display: block;
+        }
+
+        .main-title {
+            font-family: var(--font-display);
+            font-size: clamp(3.5rem, 12vw, 8rem);
+            font-weight: 400;
+            line-height: 1.1;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .names-wrapper {
+            margin-bottom: 2rem;
+        }
+
+        .ampersand {
+            font-family: var(--font-display);
+            font-size: 0.4em;
+            font-style: italic;
+            margin: 0.5rem 0;
+            opacity: 0.5;
+            color: var(--color-text-dark);
+            -webkit-text-fill-color: var(--color-text-dark);
+        }
+
+        .hero-invite-text {
+            margin-top: 3.5rem;
+            font-family: var(--font-accent);
+            letter-spacing: 0.5rem;
+            font-size: 0.85rem;
             color: var(--color-gold);
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .hero-divider {
+            width: 80px;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--color-gold), transparent);
+            margin: 2.5rem auto;
+        }
+
+        /* Rich Gold Text Effect */
+        .gold-text {
+            background: linear-gradient(135deg,
+                    #a67c52 0%,
+                    #c5a059 25%,
+                    #f1e4c1 50%,
+                    #c5a059 75%,
+                    #a67c52 100%);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shine 6s linear infinite;
+            text-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        @keyframes shine {
+            to {
+                background-position: 200% center;
+            }
+        }
+
+        /* Scroll Indicator */
+        .scroll-down {
+            position: absolute;
+            bottom: 4rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            color: var(--color-gold);
+            opacity: 0.6;
+            text-decoration: none;
+        }
+
+        .scroll-line {
+            width: 1px;
+            height: 80px;
+            background: linear-gradient(to bottom, var(--color-gold), transparent);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .scroll-line::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            animation: scrollLineAnim 2.5s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+        }
+
+        @keyframes scrollLineAnim {
+            0% {
+                transform: translateY(-100%);
+            }
+
+            100% {
+                transform: translateY(100%);
+            }
         }
 
         /* --- Section Styling --- */
@@ -375,6 +475,54 @@
                 padding: 2rem;
             }
         }
+
+        /* --- Gallery Slider --- */
+        .gallery-section {
+            padding: 80px 0;
+            background: #fff;
+            position: relative;
+        }
+
+        .slider-container {
+            width: 100%;
+            display: flex;
+            overflow-x: auto;
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .slider-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .slide {
+            flex: 0 0 85%;
+            aspect-ratio: 4/5;
+            scroll-snap-align: center;
+            border-radius: 4px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.8s ease;
+        }
+
+        .slide:hover img {
+            transform: scale(1.05);
+        }
+
+        @media (min-width: 768px) {
+            .slide {
+                flex: 0 0 400px;
+            }
+        }
     </style>
 </head>
 
@@ -382,16 +530,21 @@
 
     <!-- Hero Section -->
     <header class="hero">
+        <div class="scroll-down">
+            <div class="scroll-line"></div>
+        </div>
         <div class="hero-content">
-            <p class="hero-date" id="hero-date">12 Сентября 2026</p>
+            <span class="hero-ornament">❦</span>
+            <span class="hero-date" id="hero-date">12 Сентября 2026</span>
             <div class="names-wrapper">
-                <h1 class="main-title gold-text groom-name">Александр</h1>
-                <span class="ampersand">и</span>
-                <h1 class="main-title gold-text bride-name">Екатерина</h1>
+                <h1 class="main-title gold-text">
+                    <span class="groom-name">Александр</span>
+                    <span class="ampersand">и</span>
+                    <span class="bride-name">Екатерина</span>
+                </h1>
             </div>
-            <p
-                style="margin-top: 2rem; font-family: var(--font-accent); letter-spacing: 4px; font-size: 0.8rem; opacity: 0.6;">
-                ПРИГЛАШАЮТ ВАС</p>
+            <div class="hero-divider"></div>
+            <p class="hero-invite-text">Приглашают вас на торжество</p>
         </div>
     </header>
 
@@ -425,6 +578,26 @@
                 <h3 class="event-name">Ужин</h3>
                 <p class="detail-subtext">Праздничный банкет и танцы</p>
             </div>
+        </div>
+    </section>
+
+    <!-- Dynamic Gallery -->
+    <section id="gallery" class="gallery-section fade-in-scroll">
+        <h2 class="section-title">Галерея чувств</h2>
+        <div class="slider-container" id="gallery-slider">
+            <!-- Placeholders for images from bot -->
+            <div class="slide"><img
+                    src="https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=800&q=80"
+                    alt="Wedding 1"></div>
+            <div class="slide"><img
+                    src="https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=800&q=80"
+                    alt="Wedding 2"></div>
+            <div class="slide"><img
+                    src="https://images.unsplash.com/photo-1520854221256-17451cc331bf?auto=format&fit=crop&w=800&q=80"
+                    alt="Wedding 3"></div>
+            <div class="slide"><img
+                    src="https://images.unsplash.com/photo-1522673607200-164883eecd4c?auto=format&fit=crop&w=800&q=80"
+                    alt="Wedding 4"></div>
         </div>
     </section>
 
@@ -503,6 +676,33 @@
         }, observerOptions);
 
         document.querySelectorAll('.fade-in-scroll').forEach(el => observer.observe(el));
+
+        // Gallery Auto-slide
+        const slider = document.getElementById('gallery-slider');
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        if (slider) {
+            let scrollAmount = 0;
+            const step = 1;
+            const delay = 30;
+
+            function autoPlay() {
+                if (!isDown) {
+                    slider.scrollLeft += step;
+                    if (slider.scrollLeft >= (slider.scrollWidth - slider.clientWidth - 1)) {
+                        slider.scrollLeft = 0;
+                    }
+                }
+            }
+
+            let slideInterval = setInterval(autoPlay, delay);
+
+            slider.addEventListener('mouseenter', () => clearInterval(slideInterval));
+            slider.addEventListener('mouseleave', () => slideInterval = setInterval(autoPlay, delay));
+            slider.addEventListener('touchstart', () => clearInterval(slideInterval));
+        }
     </script>
 </body>
 

@@ -2,12 +2,14 @@
     "name": "wedding-invitation-app",
     "version": "1.0.0",
     "description": "Full stack wedding invitation app",
-    "main": "api/server.js",
+    "main": "api/dist/server.js",
     "scripts": {
-        "start": "node api/migrate.js && node api/server.js",
-        "migrate": "node api/migrate.js",
-        "dev": "nodemon api/server.js",
-        "test": "jest"
+        "start": "npm start --prefix api",
+        "build": "npm run build --prefix api",
+        "dev": "npm run dev --prefix api",
+        "test": "npm test --prefix api",
+        "migrate": "npm run migrate --prefix api",
+        "generate-keys": "npm run generate-keys --prefix api"
     },
     "dependencies": {
         "cookie-parser": "^1.4.7",

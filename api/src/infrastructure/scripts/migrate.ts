@@ -1,12 +1,17 @@
-const { Pool } = require('pg');
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config();
+import pkg from 'pg';
+const { Pool } = pkg;
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import 'dotenv/config';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const dbUrl = process.env.DATABASE_URL || '';
 const isLocal = !dbUrl || dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
 
-const poolConfig = {
+const poolConfig: any = {
     connectionString: dbUrl,
     connectionTimeoutMillis: 10000,
 };
@@ -19,7 +24,7 @@ if (!isLocal) {
 const pool = new Pool(poolConfig);
 
 async function migrate() {
-    console.log('🚀 Starting database migrations...');
+    console.log('🚀 Starting database migrations (TypeScript)...');
 
     try {
         // 1. Create migrations table
@@ -32,7 +37,7 @@ async function migrate() {
         `);
 
         // 2. Read migration files
-        const migrationsDir = path.join(__dirname, '../migrations');
+        const migrationsDir = path.join(__dirname, '../../../../migrations');
         const files = fs.readdirSync(migrationsDir)
             .filter(f => f.endsWith('.sql'))
             .sort();
@@ -54,7 +59,7 @@ async function migrate() {
                     await pool.query('INSERT INTO schema_migrations (name) VALUES ($1)', [file]);
                     await pool.query('COMMIT');
                     console.log(`✅ ${file} completed.`);
-                } catch (err) {
+                } catch (err: any) {
                     await pool.query('ROLLBACK');
                     console.error(`❌ Error in ${file}:`, err.message);
                     process.exit(1);
@@ -65,7 +70,7 @@ async function migrate() {
         }
 
         console.log('🎉 All migrations completed successfully!');
-    } catch (err) {
+    } catch (err: any) {
         console.error('❌ Migration failed:', err.message);
         process.exit(1);
     } finally {

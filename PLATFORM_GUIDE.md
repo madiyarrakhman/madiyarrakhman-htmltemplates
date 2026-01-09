@@ -1,94 +1,82 @@
-# 🚀 Wedding Platform API Guide
+# 🚀 Platform User & Management Guide
 
-Ваше приложение теперь — полноценная SaaS платформа!
+This guide provides instructions on how to manage your Wedding Invitation Platform and use its API.
 
-## 🔐 Админ Панель
+[Russian Version (Русская версия)](PLATFORM_GUIDE_RU.md)
 
-Теперь управлять приглашениями можно через визуальный интерфейс:
+---
+
+## 🔐 Admin Dashboard
+
+The visual interface for managing all invitations.
 - **URL**: `https://your-domain.com/admin`
-- **Логин/Пароль**: Устанавливаются в настройках DigitalOcean App Platform (Environment Variables).
+- **Login/Password**: These are set via Environment Variables (`ADMIN_USERNAME` and `ADMIN_PASSWORD`).
+- **Functionality**: Create new invitations, view RSVP statistics, and manage existing records.
 
-## 🔐 Ключи доступа (Для API)
+## 🔐 Access Keys
 
-- **Admin Key (Private)**: Используйте для СОЗДАНИЯ и РЕДАКТИРОВАНИЯ приглашений.
-- **Frontend Key (Public)**: Используется на сайте для отправки RSVP (генерируется автоматически).
+- **Private API Key**: Used for sensitive operations like creating and editing invitations. Use this key in your headers as `x-api-key`.
+- **Frontend Public Key**: Automatically generated to allow the frontend to fetch invitation data and submit RSVP responses safely.
 
-## 🛠 API Endpoints
+## 🛠 API Endpoints Reference
 
-### 1. 📝 Создать приглашение (Create Invitation)
-
-**POST** `/api/invitations`
-**Headers**: `x-api-key: YOUR_PRIVATE_KEY`
-
-**Body**:
+### 1. Create Invitation
+Generate a new invitation for a client.
+- **Method**: `POST`
+- **Path**: `/api/invitations`
+- **Authentication**: `x-api-key: YOUR_PRIVATE_KEY`
+- **Payload Example**:
 ```json
 {
-  "phoneNumber": "+77011234567",
-  "templateCode": "starry-night",
-  "lang": "ru",
-  "content": {
-    "groomName": "Мади",
-    "brideName": "Айгерим",
-    "date": "2026-06-15T18:00:00",
-    "location": "Rixos Borovoe",
-    "address": "Акмолинская область, п. Бурабай",
-    "story": "Наша история началась..."
-  }
+  "phoneNumber": "+1234567890",
+  "templateCode": "silk-ivory",
+  "lang": "en",
+  "groomName": "John",
+  "brideName": "Jane",
+  "eventDate": "2026-08-15 17:00:00",
+  "eventLocation": "Crystal Palace, New York",
+  "content": "Join us for our special day!"
 }
 ```
 
-**Response**:
+### 2. Fetch Invitation
+Used by the frontend to display data for a specific guest link.
+- **Method**: `GET`
+- **Path**: `/api/invitations/:uuid`
+
+### 3. Submit RSVP
+Guest response submission.
+- **Method**: `POST`
+- **Path**: `/api/rsvp/:uuid`
+- **Payload**:
 ```json
 {
-  "success": true,
-  "fullUrl": "https://your-app.com/i/5501ae34-...",
-  "invitation": { ... }
-}
-```
-
-### 2. 👀 Получить данные (Get Info)
-
-**GET** `/api/invitations/:uuid`
-(Публичный метод, используется фронтендом)
-
-### 3. 💌 Отправить RSVP (для гостей)
-
-**POST** `/api/rsvp/:uuid`
-(Публичный метод)
-
-**Body**:
-```json
-{
-  "guestName": "Иван Иванов",
-  "attendance": "yes", // or "no"
+  "guestName": "Robert Downey",
+  "attendance": "yes",
   "guestCount": 2
 }
 ```
 
-## 🤖 Интеграция с n8n
+## 🤖 Automation with n8n / Zapier
 
-Платформа полностью готова к автоматизации через n8n. 
-- Используйте ноду **HTTP Request**.
-- Метод **POST** на `/api/invitations`.
-- Заголовок `x-api-key`.
-- В ответе вы сразу получите `fullUrl`, который можно отправить в WhatsApp.
+The platform is designed for seamless automation:
+1. Use an **HTTP Request** node.
+2. Send a `POST` request to `/api/invitations` with your API Key.
+3. Use the returned `fullUrl` to automatically send invitations via WhatsApp, SMS, or Email.
 
-## 📚 Техническая документация
-Детальная спецификация API доступна в формате Swagger:
-`./docs/swagger.yaml`
+## 🌍 Workflow Lifecycle
 
-## 🌍 Как это работает
+1. **Generation**: Create an invitation (via Admin Panel or API).
+2. **Distribution**: Share the unique link `domain.com/i/UUID` with guests.
+3. **Engagement**: Guests view the personalized interactive site.
+4. **RSVP**: Guests submit their attendance status.
+5. **Monitoring**: Track all responses in real-time on your Admin Dashboard.
 
-1. Вы создаете приглашение через API или через Admin Panel.
-2. Получаете ссылку: `domain.com/i/UUID`.
-3. Отправляете эту ссылку гостю.
-4. Гость открывает, видит динамические данные (имена, дату, место).
-5. Гость отправляет RSVP.
-6. Вы видите результат в Admin Dashboard.
+## 🗄 Database Architecture
 
-## 🗄 Структура БД
+- **`templates`**: Directory of available UI designs.
+- **`invitations`**: Stores primary data, personalized content, and internal UUIDs.
+- **`rsvp_responses`**: Linked to invitations, stores guest names and counts.
 
-- **templates**: Список дизайнов.
-- **invitations**: Хранит данные каждой пары + UUID.
-- **rsvp_responses**: Ответы гостей, привязанные к UUID.
-
+---
+For technical questions, please consult the `README.md` or the `api/README.md`.

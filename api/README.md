@@ -1,54 +1,67 @@
-# 🚀 Wedding Invitation Platform API
-
-Добро пожаловать в документацию API платформы свадебных приглашений.
-
-## � Спецификация Swagger
-Полная спецификация OpenAPI 3.0 доступна в файле:
-`./docs/swagger.yaml`
+Professional API built with TypeScript, following DDD principles for managing wedding invitations, RSVPs, and administrative tasks.
 
 ---
 
-## � Аутентификация
+## 🛠 Setup & Development (TypeScript)
 
-### 1. Admin API (Куки)
-Для доступа к `/api/admin/*` необходимо выполнить вход через `/api/admin/login`. После успешного входа сервер установит HttpOnly куку `admin_token`.
-
-### 2. Public/Integration API (API Key)
-Для программного создания приглашений (например, через **n8n**) используйте заголовок:
-`x-api-key: <ВАШ_PRIVATE_API_KEY>`
+### Commands
+- `npm run build` — Compile TypeScript to `dist/`.
+- `npm run dev` — Launch development server with hot-reload (`ts-node`).
+- `npm test` — Run Jest unit tests.
+- `npm run migrate` — Execute database migrations.
+- `npm run generate-keys` — Generate secure API & JWT keys.
 
 ---
 
-## 📍 Основные эндпоинты
+## 🇺🇸 English Documentation
 
-### Публичные (n8n / Интеграции)
-- `POST /api/invitations` — Создать новое приглашение. Возвращает `fullUrl`.
+### 🔐 Authentication
+
+1. **Admin API (Cookies)**: Access to `/api/admin/*` requires login via `/api/admin/login`. On success, the server sets a `admin_token` (HttpOnly cookie).
+2. **Public/Integration API (API Key)**: For automated invitation creation, use the header: `x-api-key: <YOUR_PRIVATE_API_KEY>`.
+
+### 📍 Key Endpoints
+
+- `POST /api/invitations` — Create a new invitation (Requires API Key). Returns `fullUrl`.
+- `GET /api/invitations/:uuid` — Get invitation data for frontend display.
+- `POST /api/rsvp/:uuid` — Save guest response (RSVP).
+- `POST /api/admin/login` — Administrator authentication.
+- `GET /api/admin/invitations` — List all invitations with RSVP statistics.
+
+---
+
+## 🇷🇺 Русская Документация
+
+### 🔐 Аутентификация
+
+1. **Admin API (Cookies)**: Доступ к `/api/admin/*` требует входа через `/api/admin/login`. При успехе сервер устанавливает куку `admin_token` (HttpOnly).
+2. **Public/Integration API (API Key)**: Для автоматического создания приглашений используйте заголовок: `x-api-key: <ВАШ_PRIVATE_API_KEY>`.
+
+### 📍 Основные эндпоинты
+
+- `POST /api/invitations` — Создать новое приглашение (Нужен API Key). Возвращает `fullUrl`.
 - `GET /api/invitations/:uuid` — Получить данные приглашения для фронтенда.
-- `POST /api/rsvp/:uuid` — Сохранить ответ гостя.
-
-### Админ-панель
-- `POST /api/admin/login` — Авторизация.
+- `POST /api/rsvp/:uuid` — Сохранить ответ гостя (RSVP).
+- `POST /api/admin/login` — Авторизация администратора.
 - `GET /api/admin/invitations` — Список всех приглашений со статистикой RSVP.
-- `GET /api/admin/stats` — Общая статистика (всего приглашений, всего гостей).
 
 ---
 
-## � Пример использования (cURL)
+## 🛠 Usage Example (cURL)
 
-### Создание приглашения через API ключ:
 ```bash
 curl -X POST https://your-domain.app/api/invitations \
   -H "x-api-key: YOUR_PRIVATE_KEY" \
   -H "Content-Type: application/json" \
   -d '{
     "phoneNumber": "+77012223344",
-    "groomName": "Арман",
-    "brideName": "Аружан",
-    "eventDate": "15 июня 2026, 18:00",
-    "eventLocation": "Ресторан Royal, г. Алматы",
+    "groomName": "Arman",
+    "brideName": "Aruzhan",
+    "eventDate": "June 15, 2026, 18:00",
+    "eventLocation": "Royal Restaurant, Almaty",
     "lang": "ru"
   }'
 ```
 
-## 🏥 Проверка здоровья
-`GET /api/health` — Возвращает статус системы.
+## 🏥 Health Check
+`GET /api/health` — Returns system status.

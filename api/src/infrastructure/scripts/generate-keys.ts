@@ -1,4 +1,5 @@
-const crypto = require('crypto');
+import crypto from 'crypto';
+import fs from 'fs';
 
 /**
  * Generate API keys for the wedding invitation app
@@ -22,8 +23,6 @@ console.log(`JWT_SECRET=${jwtSecret}`);
 console.log('\n⚠️  Keep the PRIVATE_API_KEY and JWT_SECRET secret!');
 console.log('✅ The PUBLIC_API_KEY can be used in frontend code\n');
 
-// Also save to a file for convenience
-const fs = require('fs');
 const envContent = `
 # API Keys & Secrets - Generated on ${new Date().toISOString()}
 PUBLIC_API_KEY=${publicKey}
@@ -38,5 +37,9 @@ NODE_ENV=development
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/wedding_db
 `;
 
-fs.writeFileSync('.env', envContent.trim());
-console.log('✅ Keys and JWT_SECRET saved to .env file\n');
+if (!fs.existsSync('.env')) {
+    fs.writeFileSync('.env', envContent.trim());
+    console.log('✅ Keys and JWT_SECRET saved to .env file\n');
+} else {
+    console.log('⚠️  .env file already exists. Please update it manually with the values above.\n');
+}
