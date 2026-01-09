@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Приглашение на свадьбу — Silk & Ivory</title>
+    <meta name="description" content="Будем рады видеть вас на торжестве нашей любви">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --color-silk: #f9f7f2;
+            --color-ivory: #ffffff;
+            --color-gold: #c5a059;
+            --color-gold-light: #e0ca9e;
+            --color-text-dark: #2c2c2c;
+            --color-text-soft: #666666;
+            --font-display: 'Playfair Display', serif;
+            --font-accent: 'Cinzel', serif;
+            --font-body: 'Montserrat', sans-serif;
+            --container-max: 1100px;
+            --transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--color-silk);
+            color: var(--color-text-dark);
+            line-height: 1.7;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* --- Global Aesthetics --- */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.03);
+        }
+
+        .gold-text {
+            color: var(--color-gold);
+            background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-light) 50%, var(--color-gold) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            background: radial-gradient(circle at center, #ffffff 0%, var(--color-silk) 100%);
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNjNWEwNTkiIGZpbGwtb3BhY2l0eT0iMC4wNSI+PHBhdGggZD0iTTM2IDM0djJoLTR2Mmg0djJoMnYtMmg0di0yaC00di0yaC0yek0yMCAzMHYyaDR2Mmg0di0yaC00di0yaC0yem0wIDQwVjY2aC00di0yaDR2LTJoMnYyaDR2MmgtNHYyaC0yek0wIDMwaDQuMmwtNC4yIDQuMnY0LjJMOC40IDMwaDQuMkwwIDQyLjZ2NS4ybDguOC04LjhoNC44TDQgNTIuOHY0LjhsOC44LTguOGg0LjhMOCA2MEgwaDYwek0wIDB2NS40TDUuNCAwSDB6bTAsMjB2NS40bDkuNC05LjRoLTQuNEwwIDE1LjR2NC42em01NC42IDBMMjAgNTQuNnY0LjRsNC40IDEuNkw2MCAyNS40di01LjR6TTM1LjQgMCAwIDM1LjR2NC40TDQwIDBzaC00LjZ6TTkuNCAwTDAgOS40di42TDExIDB6TTU2IDBMMjAgMzZ2NmwuNi0uNkw2MCA0LjRWMHogTTUwIDBMMjAgMzB2NmwuNi0uNkw2MCA0LjRWMHpNNTQgMEwyMCAzNHY2bC42LS42TDYwIDguNFYweiBNNDAgMEwyMCAyMHY2bC42LS42TDYwIDE0LjRWMHpNMjAgMEwyMCAwdjZMLjYtLjZMNjAgMjQuNFYweiIvPjwvZz48L2c+PC9zdmc+');
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        .hero-content {
+            z-index: 2;
+            padding: 2rem;
+            animation: fadeInScale 1.8s ease-out;
+        }
+
+        .main-title {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 400;
+            margin-bottom: 0.5rem;
+            letter-spacing: -1px;
+        }
+
+        .names-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .ampersand {
+            font-family: var(--font-display);
+            font-size: 0.5em;
+            font-style: italic;
+            margin: 1rem 0;
+            opacity: 0.7;
+        }
+
+        .hero-date {
+            font-family: var(--font-accent);
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            font-size: 0.9rem;
+            margin-top: 2rem;
+            color: var(--color-gold);
+        }
+
+        /* --- Section Styling --- */
+        section {
+            padding: 100px 20px;
+            max-width: var(--container-max);
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3rem);
+            margin-bottom: 3rem;
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+
+        .section-title::after {
+            content: '❦';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: var(--color-gold);
+            font-size: 1.5rem;
+        }
+
+        /* --- Story Board --- */
+        .story-box {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 4rem;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .story-box::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            border: 1px solid var(--color-gold-light);
+            pointer-events: none;
+        }
+
+        .story-text {
+            font-size: 1.2rem;
+            color: var(--color-text-soft);
+            font-style: italic;
+            font-family: var(--font-display);
+        }
+
+        /* --- Schedule --- */
+        .schedule {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .schedule-item {
+            padding: 3rem 2rem;
+            transition: var(--transition);
+            border-bottom: 2px solid transparent;
+        }
+
+        .schedule-item:hover {
+            border-color: var(--color-gold);
+            transform: translateY(-5px);
+        }
+
+        .time {
+            font-family: var(--font-accent);
+            font-size: 1.5rem;
+            color: var(--color-gold);
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .event-name {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            margin-bottom: 1rem;
+        }
+
+        /* --- Details Info --- */
+        .location-card {
+            margin-top: 4rem;
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .address {
+            margin: 1.5rem 0;
+            font-size: 1.1rem;
+            color: var(--color-text-soft);
+        }
+
+        .action-link {
+            text-decoration: none;
+            color: var(--color-gold);
+            font-family: var(--font-accent);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--color-gold);
+            padding-bottom: 4px;
+            transition: var(--transition);
+        }
+
+        .action-link:hover {
+            color: var(--color-text-dark);
+            border-color: var(--color-text-dark);
+        }
+
+        /* --- RSVP Form --- */
+        .rsvp-section {
+            background-color: #ffffff;
+            margin-bottom: 100px;
+            border-radius: 8px;
+            max-width: 700px;
+        }
+
+        .form-silk {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            text-align: left;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--color-gold);
+            font-weight: 600;
+        }
+
+        .input-silk {
+            padding: 1rem;
+            border: none;
+            border-bottom: 1px solid #ddd;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            transition: var(--transition);
+            background: rgba(0, 0, 0, 0.01);
+        }
+
+        .input-silk:focus {
+            outline: none;
+            border-color: var(--color-gold);
+            background: #fff;
+        }
+
+        .radio-options {
+            display: flex;
+            gap: 2rem;
+            margin: 1rem 0;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .radio-option input {
+            accent-color: var(--color-gold);
+        }
+
+        .submit-silk {
+            background: var(--color-gold);
+            color: white;
+            border: none;
+            padding: 1.2rem;
+            font-family: var(--font-accent);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-top: 1rem;
+        }
+
+        .submit-silk:hover {
+            background: var(--color-text-dark);
+            letter-spacing: 5px;
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 100px 20px;
+            text-align: center;
+            background-color: #f3f0e9;
+        }
+
+        .footer-names {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeInScale {
+            0% {
+                opacity: 0;
+                transform: scale(0.98);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .fade-in-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+
+        .fade-in-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 768px) {
+            .hero-content {
+                padding: 1rem;
+            }
+
+            .story-box {
+                padding: 2rem;
+            }
+
+            .schedule {
+                grid-template-columns: 1fr;
+            }
+
+            .location-card {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Hero Section -->
+    <header class="hero">
+        <div class="hero-content">
+            <p class="hero-date" id="hero-date">12 Сентября 2026</p>
+            <div class="names-wrapper">
+                <h1 class="main-title gold-text groom-name">Александр</h1>
+                <span class="ampersand">и</span>
+                <h1 class="main-title gold-text bride-name">Екатерина</h1>
+            </div>
+            <p
+                style="margin-top: 2rem; font-family: var(--font-accent); letter-spacing: 4px; font-size: 0.8rem; opacity: 0.6;">
+                ПРИГЛАШАЮТ ВАС</p>
+        </div>
+    </header>
+
+    <!-- Our Story -->
+    <section>
+        <h2 class="section-title fade-in-scroll">Наша История</h2>
+        <div class="story-box glass-panel fade-in-scroll">
+            <p class="story-text" id="story-text">
+                «Любовь — это когда два человека смотрят не друг на друга, а в одном направлении. Мы нашли свой путь и
+                хотим пригласить вас разделить начало нашего общего путешествия.»
+            </p>
+        </div>
+    </section>
+
+    <!-- The Wedding Schedule -->
+    <section id="schedule">
+        <h2 class="section-title fade-in-scroll">Программа праздника</h2>
+        <div class="schedule">
+            <div class="schedule-item glass-panel fade-in-scroll">
+                <span class="time">16:00</span>
+                <h3 class="event-name">Welcome</h3>
+                <p class="detail-subtext">Сбор гостей и легкий фуршет в саду</p>
+            </div>
+            <div class="schedule-item glass-panel fade-in-scroll">
+                <span class="time">17:00</span>
+                <h3 class="event-name">Церемония</h3>
+                <p class="detail-subtext">Торжественная регистрация брака</p>
+            </div>
+            <div class="schedule-item glass-panel fade-in-scroll">
+                <span class="time">18:00</span>
+                <h3 class="event-name">Ужин</h3>
+                <p class="detail-subtext">Праздничный банкет и танцы</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Location -->
+    <section id="location">
+        <h2 class="section-title fade-in-scroll">Место встречи</h2>
+        <div class="location-card glass-panel fade-in-scroll">
+            <h3 class="event-name location-name">Villa Riviera</h3>
+            <p class="address location-address">ул. Набережная 45, элитный парк победы</p>
+            <a href="#" class="action-link">Посмотреть на карте</a>
+        </div>
+    </section>
+
+    <!-- RSVP Section -->
+    <section id="rsvp" class="rsvp-section glass-panel fade-in-scroll" style="padding: 4rem;">
+        <h2 class="section-title">Подтверждение</h2>
+        <p style="text-align: center; margin-bottom: 2rem; color: var(--color-text-soft);">Пожалуйста, подтвердите ваше
+            участие до 1 августа</p>
+
+        <form class="form-silk" id="rsvpForm">
+            <div class="input-group">
+                <label>Ваше Имя</label>
+                <input type="text" class="input-silk" id="guestName" placeholder="Игорь и Карина" required>
+            </div>
+
+            <div class="input-group">
+                <label>Ваше присутствие</label>
+                <div class="radio-options">
+                    <label class="radio-option">
+                        <input type="radio" name="attendance" value="yes" checked>
+                        <span>Приду с удовольствием</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="attendance" value="no">
+                        <span>Не смогу присутствовать</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label>Количество гостей</label>
+                <input type="number" class="input-silk" id="guestCount" min="1" max="5" value="1">
+            </div>
+
+            <button type="submit" class="submit-silk">Отправить ответ</button>
+        </form>
+
+        <div id="successMessage" style="display:none; text-align:center; padding: 2rem; color: var(--color-gold);">
+            <p style="font-size: 1.5rem; font-family: var(--font-display);">Благодарим за ответ!</p>
+            <p>Мы будем очень рады вас видеть.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-names gold-text">
+            <span class="groom-name">Александр</span> & <span class="bride-name">Екатерина</span>
+        </div>
+        <p style="letter-spacing: 5px; font-size: 0.8rem; opacity: 0.5; margin-top: 1rem;">2026 — FOREVER</p>
+    </footer>
+
+    <script src="/config.js"></script>
+    <script src="/script.js"></script>
+    <script>
+        // Scroll Animation Observer
+        const observerOptions = {
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in-scroll').forEach(el => observer.observe(el));
+    </script>
+</body>
+
+</html>

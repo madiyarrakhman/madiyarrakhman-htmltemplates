@@ -298,6 +298,7 @@ app.get('/api/health', (req, res) => {
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '../admin.html')));
 app.get('/admin/login', (req, res) => res.sendFile(path.join(__dirname, '../admin-login.html')));
 app.get('/i/:uuid', (req, res) => res.sendFile(path.join(__dirname, '../wedding-invitation.html')));
+app.get('/template/silk-ivory', (req, res) => res.sendFile(path.join(__dirname, '../wedding-silk-ivory.html')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../wedding-invitation.html')));
 app.get('*', (req, res) => res.status(404).sendFile(path.join(__dirname, '../404.html')));
 
