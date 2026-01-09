@@ -7,11 +7,13 @@ export class PostgresAdminRepository implements IAdminRepository {
     async getInvitationsList(): Promise<AdminInvitationListItemEntity[]> {
         const result = await this.pool.query(`
             SELECT i.*, 
+                   t.name as template_name,
                    COUNT(r.id)::int as rsvp_count,
                    SUM(CASE WHEN r.attendance = 'yes' THEN r.guest_count ELSE 0 END)::int as approved_guests
             FROM invitations i
+            LEFT JOIN templates t ON i.template_code = t.code
             LEFT JOIN rsvp_responses r ON i.uuid = r.invitation_uuid
-            GROUP BY i.id
+            GROUP BY i.id, t.name
             ORDER BY i.created_at DESC
         `);
 
@@ -19,6 +21,7 @@ export class PostgresAdminRepository implements IAdminRepository {
             uuid: row.uuid,
             phoneNumber: row.phone_number,
             templateCode: row.template_code,
+            templateName: row.template_name || row.template_code,
             lang: row.lang,
             groomName: row.groom_name,
             brideName: row.bride_name,

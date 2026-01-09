@@ -197,6 +197,7 @@
                 <thead>
                     <tr>
                         <th>Телефон</th>
+                        <th>Шаблон</th>
                         <th>Язык</th>
                         <th>RSVP</th>
                         <th>Гостей</th>
@@ -294,6 +295,7 @@
                     tbody.innerHTML = invites.map(i => `
                         <tr>
                             <td>${escapeHTML(i.phoneNumber)}</td>
+                            <td><span class="badge" style="background: #e3f2fd; color: #1976d2;">${escapeHTML(i.templateName)}</span></td>
                             <td><span class="badge">${escapeHTML(i.lang)}</span></td>
                             <td>${i.rsvpCount}</td>
                             <td>${i.approvedGuests || 0}</td>

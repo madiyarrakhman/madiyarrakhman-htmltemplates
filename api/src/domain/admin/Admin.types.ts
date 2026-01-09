@@ -8,6 +8,7 @@ export interface AdminInvitationListItemEntity {
     uuid: string;
     phoneNumber: string;
     templateCode: string;
+    templateName: string;
     lang: string;
     groomName: string;
     brideName: string;
