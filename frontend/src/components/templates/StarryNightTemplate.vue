@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { format } from 'date-fns'
+import { format, isValid } from 'date-fns'
 import { ru, enUS, kk } from 'date-fns/locale' // You might need to add 'kk' locale if available or standout
 import type { Invitation } from '@/types/invitation'
 
@@ -22,12 +22,17 @@ const isSuccess = ref(false)
 const formattedDate = computed(() => {
   if (!props.invitation.eventDate) return ''
   const dateObj = new Date(props.invitation.eventDate)
+  if (!isValid(dateObj)) {
+      console.warn('Invalid date:', props.invitation.eventDate)
+      return props.invitation.eventDate // Return raw string if parsing fails
+  }
+  
   // Simple mapping for date-fns locales. 
   // Note: date-fns might not have 'kk' natively in older versions or specific imports. 
   // Falling back to 'ru' for 'kk' or custom formatting might be needed.
   let dateLocale = ru
   if (locale.value === 'en') dateLocale = enUS
-  if (locale.value === 'kk') dateLocale = kk
+  if (locale.value === 'kk') dateLocale = kk || ru // Fallback to ru if kk is missing/undefined in runtime
   
   return format(dateObj, 'd MMMM yyyy', { locale: dateLocale })
 })
@@ -35,6 +40,7 @@ const formattedDate = computed(() => {
 const formattedTime = computed(() => {
     if (!props.invitation.eventDate) return ''
     const dateObj = new Date(props.invitation.eventDate)
+    if (!isValid(dateObj)) return ''
     return format(dateObj, 'HH:mm')
 })
 
