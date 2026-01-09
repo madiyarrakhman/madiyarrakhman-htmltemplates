@@ -57,6 +57,9 @@ const pool = new Pool({
     ssl: isLocal ? false : { rejectUnauthorized: false }
 });
 
+if (!isLocal) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+}
 console.log(`📡 Database SSL: ${isLocal ? 'Disabled (Local)' : 'Enabled (Production/Remote)'}`);
 
 pool.on('error', (err) => {
