@@ -72,7 +72,7 @@ const loadData = async () => {
         const templRes = await fetch('/api/admin/templates')
         templates.value = await templRes.json()
         if (templates.value.length > 0) {
-            createForm.value.templateCode = templates.value[0].code
+            createForm.value.templateCode = templates.value[0]?.code || ''
         }
 
         // Load Invitations

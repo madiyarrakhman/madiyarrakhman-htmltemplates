@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import type { Invitation } from '@/types/invitation'
 
 const route = useRoute()
-const { t, locale } = useI18n()
+const { locale } = useI18n()
 
 // Async components to load localized templates on demand
 const StarryNightTemplate = defineAsyncComponent(() => import('@/components/templates/StarryNightTemplate.vue'))
@@ -50,7 +50,7 @@ const fetchInvitation = async () => {
         // The API returns camelCase properties directly now based on previous context
         invitation.value = {
             id: data.id,
-            templateId: data.templateId || data.template?.name || 'default', // Fallback
+            templateId: data.templateCode || data.templateId || data.template?.name || 'default', // Map templateCode
             groomName: data.groomName || data.content?.groomName,
             brideName: data.brideName || data.content?.brideName,
             eventDate: data.eventDate || data.content?.eventDate,

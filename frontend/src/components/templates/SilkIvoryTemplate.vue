@@ -495,6 +495,12 @@ section {
     margin-bottom: 1rem;
 }
 
+.detail-subtext {
+    font-size: 1rem;
+    color: var(--color-text-soft);
+    line-height: 1.6;
+}
+
 /* --- Details Info --- */
 .location-card {
     margin-top: 4rem;

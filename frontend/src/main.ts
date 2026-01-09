@@ -17,9 +17,9 @@ const i18n = createI18n({
     locale: 'ru', // default locale
     fallbackLocale: 'ru',
     messages: {
-        ru: ru.ru, // The JSON structure has a root key "ru", "kk", "en" based on my previous view
-        kk: kk.kk,
-        en: en.en
+        ...ru,
+        ...kk,
+        ...en
     }
 })
 
