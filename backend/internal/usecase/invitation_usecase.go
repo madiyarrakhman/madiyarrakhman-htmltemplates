@@ -56,8 +56,10 @@ func (u *InvitationUseCase) ResolveShortCode(code string) (string, error) {
 // Private helper to generate short code (normally a separate domain service)
 func generateShortCode() string {
 	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	// For simplicity in a high-level refactor, using a simple time-based logic or crypto/rand
-	// Here we just use a placeholder to represent the logic
-	// In production, use a more collision-resistant method
-	return "short1" // Placeholder
+	b := make([]byte, 6)
+	u := uuid.New().String()
+	for i := 0; i < 6; i++ {
+		b[i] = chars[u[i]%byte(len(chars))]
+	}
+	return string(b)
 }
