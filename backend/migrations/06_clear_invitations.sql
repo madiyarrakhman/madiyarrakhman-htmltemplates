@@ -1,3 +1,9 @@
--- Migration 06: Clear all invitations and RSVPs
--- WARNING: This deletes all user data
+-- +goose Up
+-- +goose StatementBegin
 TRUNCATE TABLE invitations CASCADE;
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+-- No rollback for truncation
+-- +goose StatementEnd

@@ -1,4 +1,5 @@
--- Migration 04: Add short_code to invitations
+-- +goose Up
+-- +goose StatementBegin
 ALTER TABLE invitations
 ADD COLUMN IF NOT EXISTS short_code VARCHAR(10) UNIQUE;
 
@@ -22,3 +23,11 @@ SET
     short_code = generate_short_code ()
 WHERE
     short_code IS NULL;
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+DROP FUNCTION IF EXISTS generate_short_code;
+
+ALTER TABLE invitations DROP COLUMN IF EXISTS short_code;
+-- +goose StatementEnd

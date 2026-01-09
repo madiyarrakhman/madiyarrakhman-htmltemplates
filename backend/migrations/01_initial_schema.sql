@@ -1,4 +1,5 @@
--- Migration 01: Initial Schema
+-- +goose Up
+-- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS templates (
     id SERIAL PRIMARY KEY,
     code VARCHAR(50) UNIQUE NOT NULL,
@@ -32,3 +33,13 @@ CREATE TABLE IF NOT EXISTS rsvp_responses (
     guest_count INTEGER DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+-- +goose StatementEnd
+
+-- +goose Down
+-- +goose StatementBegin
+DROP TABLE IF EXISTS rsvp_responses;
+
+DROP TABLE IF EXISTS invitations;
+
+DROP TABLE IF EXISTS templates;
+-- +goose StatementEnd
