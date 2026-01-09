@@ -48,12 +48,16 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.static(rootDir));
 
+const isLocal = !process.env.DATABASE_URL ||
+    process.env.DATABASE_URL.includes('localhost') ||
+    process.env.DATABASE_URL.includes('127.0.0.1');
+
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    ssl: process.env.DATABASE_URL?.includes('localhost') ? false : {
-        rejectUnauthorized: false
-    }
+    ssl: isLocal ? false : { rejectUnauthorized: false }
 });
+
+console.log(`📡 Database SSL: ${isLocal ? 'Disabled (Local)' : 'Enabled (Production/Remote)'}`);
 
 pool.on('error', (err) => {
     console.error('Unexpected error on idle client', err);
@@ -115,7 +119,7 @@ app.get('/s/:shortCode', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).sendFile(path.join(rootDir, '404.html'));
         }
-        res.redirect(`/i/${result.rows[0].uuid}`);
+        res.redirect(`/ i / ${result.rows[0].uuid} `);
     } catch (err) {
         res.status(500).send('Internal Server Error');
     }
@@ -151,7 +155,7 @@ app.get('/admin/login', (req, res) => res.sendFile(path.join(rootDir, 'admin-log
 app.get('/config.js', (req, res) => {
     const publicKey = process.env.FRONTEND_PUBLIC_KEY || process.env.PUBLIC_API_KEY || 'no-key';
     res.setHeader('Content-Type', 'application/javascript');
-    res.send(`const API_CONFIG = { PUBLIC_API_KEY: '${publicKey}', API_URL: window.location.origin + '/api' };`);
+    res.send(`const API_CONFIG = { PUBLIC_API_KEY: '${publicKey}', API_URL: window.location.origin + '/api' }; `);
 });
 
 // Root & Fallback
