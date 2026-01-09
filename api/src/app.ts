@@ -24,7 +24,11 @@ app.set('trust proxy', 1); // Trust first proxy (Digital Ocean/Heroku)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 // From api/src up to api/ up to root/ then frontend
-const rootDir = path.join(__dirname, '../../frontend/dist');
+const rootDir = path.resolve(__dirname, '../../frontend/dist');
+const isTest = process.env.NODE_ENV === 'test' || !!process.env.JEST_WORKER_ID;
+if (!isTest) {
+    console.log(`📂 Serving frontend from: ${rootDir}`);
+}
 
 // Middleware
 app.use(helmet({
@@ -38,7 +42,6 @@ app.use(helmet({
     },
 }));
 
-const isTest = process.env.NODE_ENV === 'test' || !!process.env.JEST_WORKER_ID;
 
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -159,7 +162,12 @@ app.get('/s/:shortCode', async (req, res) => {
 // For any request not handled above (API, static assets, shortlink), serve index.html
 // and let Vue Router handle the routing.
 app.get('*', (req, res) => {
-    res.sendFile(path.join(rootDir, 'index.html'));
+    res.sendFile(path.join(rootDir, 'index.html'), (err) => {
+        if (err) {
+            console.error('❌ Error sending index.html:', err.message);
+            res.status(404).send('Frontend not found. Make sure you have built the frontend.');
+        }
+    });
 });
 
 // Export for server and tests
