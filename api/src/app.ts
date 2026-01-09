@@ -128,55 +128,29 @@ app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', timest
 // --- Frontend & Redirects ---
 
 // Short URL Redirect
+// Redirects to the invitation page. 
+// In development, if accessing via backend (3008), this redirects to /i/..., which falls through to SPA handler below or 404 if not built.
+// In production, this works naturally.
 app.get('/s/:shortCode', async (req, res) => {
     const { shortCode } = req.params;
     try {
         const result = await pool.query('SELECT uuid FROM invitations WHERE short_code = $1', [shortCode]);
         if (result.rows.length === 0) {
-            return res.status(404).sendFile(path.join(rootDir, '404.html'));
+            // Serve 404 or JSON error
+            return res.status(404).send('Short link not found');
         }
-        res.redirect(`/ i / ${result.rows[0].uuid} `);
+        res.redirect(`/i/${result.rows[0].uuid}`);
     } catch (err) {
         res.status(500).send('Internal Server Error');
     }
 });
 
-// Invitation Page Routing
-app.get('/i/:uuid', async (req, res) => {
-    const { uuid } = req.params;
-    try {
-        const result = await pool.query('SELECT template_code FROM invitations WHERE uuid = $1', [uuid]);
-        if (result.rows.length === 0) {
-            return res.status(404).sendFile(path.join(rootDir, '404.html'));
-        }
-
-        const template = result.rows[0].template_code;
-        let fileName = 'wedding-invitation.html';
-
-        if (template === 'silk-ivory') {
-            fileName = 'wedding-silk-ivory.html';
-        }
-
-        res.sendFile(path.join(rootDir, fileName));
-    } catch (err) {
-        res.status(500).send('Internal Server Error');
-    }
+// SPA Fallback
+// For any request not handled above (API, static assets, shortlink), serve index.html
+// and let Vue Router handle the routing.
+app.get('*', (req, res) => {
+    res.sendFile(path.join(rootDir, 'index.html'));
 });
-
-// Admin Pages
-app.get('/admin', (req, res) => res.sendFile(path.join(rootDir, 'admin.html')));
-app.get('/admin/login', (req, res) => res.sendFile(path.join(rootDir, 'admin-login.html')));
-
-// Frontend Config
-app.get('/config.js', (req, res) => {
-    const publicKey = process.env.FRONTEND_PUBLIC_KEY || process.env.PUBLIC_API_KEY || 'no-key';
-    res.setHeader('Content-Type', 'application/javascript');
-    res.send(`const API_CONFIG = { PUBLIC_API_KEY: '${publicKey}', API_URL: window.location.origin + '/api' }; `);
-});
-
-// Root & Fallback
-app.get('/', (req, res) => res.sendFile(path.join(rootDir, 'landing.html')));
-app.get('*', (req, res) => res.status(404).sendFile(path.join(rootDir, '404.html')));
 
 // Export for server
 export { app };

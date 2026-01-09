@@ -6,13 +6,21 @@ import App from './App.vue'
 import router from './router'
 import './assets/main.css'
 
+import ru from './locales/ru.json'
+import kk from './locales/kk.json'
+import en from './locales/en.json'
+
 const app = createApp(App)
 
 const i18n = createI18n({
     legacy: false, // Usage with Composition API
     locale: 'ru', // default locale
     fallbackLocale: 'ru',
-    messages: {} // messages will be loaded dynamically
+    messages: {
+        ru: ru.ru, // The JSON structure has a root key "ru", "kk", "en" based on my previous view
+        kk: kk.kk,
+        en: en.en
+    }
 })
 
 app.use(createPinia())
