@@ -100,12 +100,14 @@ describe('Wedding Platform Full Integration Tests', () => {
                     groomName: 'PublicGroom',
                     brideName: 'PublicBride',
                     eventDate: '2026-07-20',
-                    eventLocation: 'Public Garden'
+                    eventLocation: 'Public Garden',
+                    templateCode: 'silk-ivory'
                 });
 
             expect(res.statusCode).toEqual(201);
             expect(res.body.invitation.uuid).toBeDefined();
-            expect(res.body.fullUrl).toBeDefined();
+            expect(res.body.shortUrl).toBeDefined();
+            expect(res.body.invitation.template_code).toBe('silk-ivory');
         });
     });
 
@@ -144,6 +146,74 @@ describe('Wedding Platform Full Integration Tests', () => {
         it('should return health status', async () => {
             const res = await request(app).get('/api/health');
             expect(res.body.status).toBe('ok');
+        });
+
+        it('should serve the landing page at root', async () => {
+            const res = await request(app).get('/');
+            expect(res.statusCode).toEqual(200);
+            expect(res.text).toContain('VibeInvite');
+        });
+
+        it('should show 404 for unknown routes', async () => {
+            const res = await request(app).get('/some-random-route');
+            expect(res.statusCode).toEqual(404);
+            expect(res.text).toContain('404');
+        });
+
+        it('should handle short URL redirects', async () => {
+            // Create an invite first
+            const createRes = await request(app)
+                .post('/api/invitations')
+                .set('x-api-key', process.env.PRIVATE_API_KEY || 'sk_local_admin_key')
+                .send({
+                    phoneNumber: '123',
+                    groomName: 'Short',
+                    brideName: 'Url',
+                    eventDate: 'Today',
+                    eventLocation: 'Internet'
+                });
+
+            const shortCode = createRes.body.invitation.short_code;
+            const uuid = createRes.body.invitation.uuid;
+
+            const res = await request(app).get(`/s/${shortCode}`);
+            expect(res.statusCode).toEqual(302); // Redirect
+            expect(res.headers.location).toBe(`/i/${uuid}`);
+        });
+
+        it('should serve correct template based on database', async () => {
+            // 1. Check default template
+            const res1 = await request(app)
+                .post('/api/invitations')
+                .set('x-api-key', process.env.PRIVATE_API_KEY || 'sk_local_admin_key')
+                .send({
+                    phoneNumber: 'default',
+                    groomName: 'Def',
+                    brideName: 'Ault',
+                    eventDate: 'D',
+                    eventLocation: 'L'
+                });
+
+            const uuid1 = res1.body.invitation.uuid;
+            const view1 = await request(app).get(`/i/${uuid1}`);
+            expect(view1.text).toContain('Приглашение на свадьбу'); // From wedding-invitation.html
+
+            // 2. Check Silk & Ivory template
+            const res2 = await request(app)
+                .post('/api/invitations')
+                .set('x-api-key', process.env.PRIVATE_API_KEY || 'sk_local_admin_key')
+                .send({
+                    phoneNumber: 'silk',
+                    groomName: 'Sil',
+                    brideName: 'K',
+                    eventDate: 'D',
+                    eventLocation: 'L',
+                    templateCode: 'silk-ivory'
+                });
+
+            const uuid2 = res2.body.invitation.uuid;
+            const view2 = await request(app).get(`/i/${uuid2}`);
+            expect(view2.text).toContain('Silk & Ivory'); // From wedding-silk-ivory.html
         });
     });
 });
