@@ -5,9 +5,9 @@
     "main": "api/dist/server.js",
     "scripts": {
         "start": "npm start --prefix api",
-        "build": "cd api && npm install && npm run build",
+        "build": "cd api && npm install && npm run build && cd ../frontend && npm install && npm run build",
         "dev": "npm run dev --prefix api",
-        "test": "npm test --prefix api",
+        "test": "npm test --prefix api && npm test --prefix frontend -- --run",
         "migrate": "npm run migrate --prefix api",
         "generate-keys": "npm run generate-keys --prefix api"
     },

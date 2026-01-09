@@ -48,13 +48,12 @@ const submitRsvp = async () => {
     isSubmitting.value = true
     try {
         const payload = {
-            invitationId: props.invitation.id,
             guestName: guestName.value,
-            attending: attendance.value === 'yes',
+            attendance: attendance.value, // Send 'yes' or 'no' directly
             guestCount: guestCount.value
         }
         
-        await fetch('/api/rsvp', {
+        await fetch(`/api/rsvp/${props.invitation.id}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

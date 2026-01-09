@@ -38,6 +38,7 @@ jobs:
       run: |
         npm install
         cd api && npm install
+        cd ../frontend && npm install
       
     - name: Run migrations
       run: npm run migrate

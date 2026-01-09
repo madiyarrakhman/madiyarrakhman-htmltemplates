@@ -51,7 +51,8 @@ export class InvitationController {
             if (error.message === 'Invitation not found') {
                 return res.status(404).json({ error: error.message });
             }
-            return res.status(400).json({ error: error.message });
+            console.error('Invitation Error:', error);
+            return res.status(error.code === '22P02' ? 404 : 500).json({ error: 'Internal Server Error' });
         }
     }
 }
