@@ -23,8 +23,8 @@ const app = express();
 app.set('trust proxy', 1); // Trust first proxy (Digital Ocean/Heroku)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// From api/dist/server.js up to api/ up to root/
-const rootDir = path.join(__dirname, '../../');
+// From api/src up to api/ up to root/ then frontend
+const rootDir = path.join(__dirname, '../../frontend');
 
 // Middleware
 app.use(helmet({
