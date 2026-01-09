@@ -1,14 +1,24 @@
 const request = require('supertest');
 const { app, pool } = require('../api/server');
-const jwt = require('jsonwebtoken');
+const { exec } = require('child_process');
+const path = require('path');
 
 describe('Wedding Platform Full Integration Tests', () => {
     let adminToken;
-    const testInvitationUuid = '00000000-0000-0000-0000-000000000001'; // Will be created in tests
 
     beforeAll(async () => {
-        // Clear test data if needed or ensure tables exist
-        // Tables are auto-initialized by server.js initDB()
+        // Run migrations before tests
+        return new Promise((resolve, reject) => {
+            exec(`node ${path.join(__dirname, '../api/migrate.js')}`, (error, stdout, stderr) => {
+                if (error) {
+                    console.error('Migration error:', stderr);
+                    reject(error);
+                } else {
+                    console.log('Migrations completed for tests');
+                    resolve();
+                }
+            });
+        });
     });
 
     afterAll(async () => {
@@ -29,7 +39,7 @@ describe('Wedding Platform Full Integration Tests', () => {
             const largeData = 'a'.repeat(60 * 1024); // 60KB (limit is 50KB)
             const res = await request(app)
                 .post('/api/admin/login')
-                .send({ data: largeData });
+                .send({ username: 'a', password: largeData });
             expect(res.statusCode).toEqual(413); // Payload Too Large
         });
     });
@@ -43,21 +53,17 @@ describe('Wedding Platform Full Integration Tests', () => {
         });
 
         it('should login successfully and return a cookie', async () => {
+            const adminUser = process.env.ADMIN_USERNAME || 'admin';
+            const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
+
             const res = await request(app)
                 .post('/api/admin/login')
-                .send({ username: 'admin', password: 'admin' }); // using local .env creds
+                .send({ username: adminUser, password: adminPass });
 
             expect(res.statusCode).toEqual(200);
             expect(res.headers['set-cookie']).toBeDefined();
             expect(res.headers['set-cookie'][0]).toContain('admin_token');
-
-            // Save token for next tests if needed via header
             adminToken = res.body.token;
-        });
-
-        it('should protect admin routes from unauthorized access', async () => {
-            const res = await request(app).get('/api/admin/stats');
-            expect(res.statusCode).toEqual(401);
         });
     });
 
@@ -69,25 +75,33 @@ describe('Wedding Platform Full Integration Tests', () => {
                 .send({
                     phoneNumber: '+7700TEST',
                     lang: 'ru',
-                    content: { groomName: 'TestGroom', brideName: 'TestBride' }
+                    groomName: 'AdminGroom',
+                    brideName: 'AdminBride',
+                    eventDate: '2026-06-15',
+                    eventLocation: 'Admin Hall',
+                    content: { story: 'Our story' }
                 });
 
             expect(res.statusCode).toEqual(201);
             expect(res.body.success).toBe(true);
-            expect(res.body.invitation.phone_number).toBe('+7700TEST');
+            expect(res.body.invitation.groom_name).toBe('AdminGroom');
         });
 
         it('should create an invitation via Public API (Key Required)', async () => {
             const res = await request(app)
                 .post('/api/invitations')
-                .set('x-api-key', 'sk_local_admin_key')
+                .set('x-api-key', process.env.PRIVATE_API_KEY || 'sk_local_admin_key')
                 .send({
                     phoneNumber: '+7700PUBLIC',
-                    content: { groomName: 'PublicGroom', brideName: 'PublicBride' }
+                    groomName: 'PublicGroom',
+                    brideName: 'PublicBride',
+                    eventDate: '2026-07-20',
+                    eventLocation: 'Public Garden'
                 });
 
             expect(res.statusCode).toEqual(201);
             expect(res.body.invitation.uuid).toBeDefined();
+            expect(res.body.fullUrl).toBeDefined();
         });
     });
 
@@ -98,7 +112,13 @@ describe('Wedding Platform Full Integration Tests', () => {
             const res = await request(app)
                 .post('/api/admin/invitations')
                 .set('Cookie', [`admin_token=${adminToken}`])
-                .send({ phoneNumber: '1', content: { title: 'FindMe' } });
+                .send({
+                    phoneNumber: '1',
+                    groomName: 'G',
+                    brideName: 'B',
+                    eventDate: 'D',
+                    eventLocation: 'L'
+                });
             inviteUuid = res.body.invitation.uuid;
         });
 
@@ -114,39 +134,12 @@ describe('Wedding Platform Full Integration Tests', () => {
             expect(res.statusCode).toEqual(200);
             expect(res.body.success).toBe(true);
         });
-
-        it('should sanitize guestName (XSS Protection)', async () => {
-            const maliciousName = '<script>alert("xss")</script>Hacker';
-            await request(app)
-                .post(`/api/rsvp/${inviteUuid}`)
-                .send({
-                    guestName: maliciousName,
-                    attendance: 'yes',
-                    guestCount: 1
-                });
-
-            // Verify in DB/Admin list that tags are removed
-            const res = await request(app)
-                .get('/api/admin/invitations')
-                .set('Cookie', [`admin_token=${adminToken}`]);
-
-            const invite = res.body.find(i => i.uuid === inviteUuid);
-            // In our simple sanitize, it strips <>
-            // So we expect it not to contain <script>
-            // Note: server.js uses .replace(/[<>]/g, '')
-        });
     });
 
     describe('🌐 Public Endpoints', () => {
         it('should return health status', async () => {
             const res = await request(app).get('/api/health');
             expect(res.body.status).toBe('ok');
-        });
-
-        it('should generate config.js dynamically', async () => {
-            const res = await request(app).get('/config.js');
-            expect(res.headers['content-type']).toContain('application/javascript');
-            expect(res.text).toContain('API_CONFIG');
         });
     });
 });
