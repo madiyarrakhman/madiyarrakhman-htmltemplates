@@ -56,133 +56,31 @@ async function loadInvitation(uuid) {
     }
 }
 
-// UI Translations Dictionary
-const UI_TRANSLATIONS = {
-    ru: {
-        invite_text: "Приглашают вас разделить с ними радость",
-        invite_text_silk: "Приглашают вас на торжество",
-        story_title: "Наша история",
-        gallery_title: "Мгновения счастья",
-        gallery_title_silk: "Галерея чувств",
-        details_title: "Детали торжества",
-        details_title_silk: "Программа праздника",
-        location_title_silk: "Место встречи",
-        date_label: "Дата и Время",
-        location_label: "Место проведения",
-        dress_code_label: "Дресс-код",
-        dress_code_text: "Вечерний стиль",
-        rsvp_title: "Подтверждение присутствия",
-        rsvp_text: "Будем рады видеть вас на нашем празднике!",
-        rsvp_title_silk: "Подтверждение",
-        rsvp_text_silk: "Пожалуйста, подтвердите ваше участие",
-        name_label: "Ваше Имя",
-        name_placeholder: "Ваше Имя и Фамилия",
-        name_placeholder_silk: "Игорь и Карина",
-        attending_yes: "С радостью приду!",
-        attending_yes_silk: "Приду с удовольствием",
-        attending_no: "К сожалению, не смогу",
-        attending_no_silk: "Не смогу присутствовать",
-        guest_count_label: "Количество гостей",
-        submit_btn: "Отправить ответ",
-        success_title: "Спасибо!",
-        success_text: "Ваш ответ получен.",
-        success_title_silk: "Благодарим за ответ!",
-        success_text_silk: "Мы будем очень рады вас видеть.",
-        scroll_down: "Листайте вниз",
-        map_link: "Посмотреть на карте",
-        default_story: "Наша история любви началась с простого взгляда, но переросла в нечто большее. Мы прошли долгий путь вместе и теперь готовы создать нашу семью.",
-        schedule: [
-            { time: "16:00", name: "Welcome", desc: "Сбор гостей и легкий фуршет в саду" },
-            { time: "17:00", name: "Церемония", desc: "Торжественная регистрация брака" },
-            { time: "18:00", name: "Ужин", desc: "Праздничный банкет и танцы" }
-        ]
-    },
-    kk: {
-        invite_text: "Сіздерді қуанышымызбен бөлісуге шақырамыз",
-        invite_text_silk: "Сіздерді салтанатымызға шақырамыз",
-        story_title: "Біздің тарихымыз",
-        gallery_title: "Бақытты сәттер",
-        gallery_title_silk: "Сезімдер галереясы",
-        details_title: "Той егжей-тегжейі",
-        details_title_silk: "Той бағдарламасы",
-        location_title_silk: "Кездесу орны",
-        date_label: "Күні мен уақыты",
-        location_label: "Өтетін орны",
-        dress_code_label: "Дресс-код",
-        dress_code_text: "Кешкі стиль",
-        rsvp_title: "Қатысуды растау",
-        rsvp_text: "Сіздерді тойымызда көруге қуаныштымыз!",
-        rsvp_title_silk: "Қатысуды растау",
-        rsvp_text_silk: "Тойға келетініңізді растауыңызды сұраймыз",
-        name_label: "Сіздің атыңыз",
-        name_placeholder: "Аты-жөніңіз",
-        name_placeholder_silk: "Қайрат пен Айнұр",
-        attending_yes: "Қуана келемін!",
-        attending_yes_silk: "Келемін, қуаныштымын",
-        attending_no: "Өкінішке орай, келе алмаймын",
-        attending_no_silk: "Өкінішке орай, келе алмаймын",
-        guest_count_label: "Қонақтар саны",
-        submit_btn: "Жауапты жіберу",
-        success_title: "Рахмет!",
-        success_text: "Жауабыңыз қабылданды.",
-        success_title_silk: "Жауабыңызға рахмет!",
-        success_text_silk: "Сізді көруге өте қуанышты боламыз.",
-        scroll_down: "Төмен жылжытыңыз",
-        map_link: "Картадан көру",
-        default_story: "Біздің махаббат хикаямыз қарапайым көзқарастан басталды, бірақ үлкен сезімге ұласты. Біз бірге ұзақ жолдан өттік және енді өз отбасымызды құруға дайынбыз.",
-        schedule: [
-            { time: "16:00", name: "Welcome", desc: "Қонақтардың жиналуы және бақшадағы жеңіл фуршет" },
-            { time: "17:00", name: "Рәсім", desc: "Неке қию салтанаты" },
-            { time: "18:00", name: "Кешкі ас", desc: "Мерекелік банкет және би" }
-        ]
-    },
-    en: {
-        invite_text: "Invite you to share their joy",
-        invite_text_silk: "Invite you to the celebration",
-        story_title: "Our Story",
-        gallery_title: "Happy Moments",
-        gallery_title_silk: "Gallery of Feelings",
-        details_title: "Wedding Details",
-        details_title_silk: "Wedding Schedule",
-        location_title_silk: "Location",
-        date_label: "Date & Time",
-        location_label: "Venue",
-        dress_code_label: "Dress Code",
-        dress_code_text: "Evening Attire",
-        rsvp_title: "RSVP",
-        rsvp_text: "We would be delighted to see you at our celebration!",
-        rsvp_title_silk: "Confirmation",
-        rsvp_text_silk: "Please confirm your attendance",
-        name_label: "Your Name",
-        name_placeholder: "Your Full Name",
-        name_placeholder_silk: "John and Sarah",
-        attending_yes: "Joyfully accept!",
-        attending_yes_silk: "Will definitely attend",
-        attending_no: "Regretfully decline",
-        attending_no_silk: "Unable to attend",
-        guest_count_label: "Number of guests",
-        submit_btn: "Send RSVP",
-        success_title: "Thank you!",
-        success_text: "Your response has been received.",
-        success_title_silk: "Thank you for the answer!",
-        success_text_silk: "We would be very happy to see you.",
-        scroll_down: "Scroll down",
-        map_link: "View on map",
-        default_story: "Our love story began with a simple glance, but grew into something more. We have come a long way together and are now ready to create our family.",
-        schedule: [
-            { time: "16:00", name: "Welcome", desc: "Guest arrival and light reception in the garden" },
-            { time: "17:00", name: "Ceremony", desc: "Solemn marriage registration" },
-            { time: "18:00", name: "Dinner", desc: "Festive banquet and dancing" }
-        ]
+// UI Translations (Loaded dynamically)
+let UI_TRANSLATIONS = {};
+
+async function loadTranslations(lang) {
+    if (UI_TRANSLATIONS[lang]) return UI_TRANSLATIONS[lang];
+    try {
+        const response = await fetch(`/locales/${lang}.json`);
+        if (!response.ok) throw new Error(`Could not load translations for ${lang}`);
+        const data = await response.json();
+        UI_TRANSLATIONS[lang] = data[lang]; // structure is { "ru": { ... } }
+        return UI_TRANSLATIONS[lang];
+    } catch (e) {
+        console.error('Translation load error:', e);
+        // Fallback to minimal if fetch fails
+        return null;
     }
-};
+}
 
 // 3. Render Content
-function renderInvitation(data) {
+async function renderInvitation(data) {
     if (!data) return;
 
-    // Apply translations first
-    translateUI(currentLang);
+    // Load and Apply translations
+    const t = await loadTranslations(currentLang) || await loadTranslations('ru');
+    if (t) translateUI(t);
 
     // Favor top-level declared fields (camelCase from repository)
     const groomName = data.groomName || data.groom_name || data.content?.groomName;
@@ -222,8 +120,8 @@ function renderInvitation(data) {
         setMultiText('.location-address', '');
     }
 
-    const t = UI_TRANSLATIONS[currentLang] || UI_TRANSLATIONS.ru;
-    const finalStory = story || t.default_story;
+    // Story
+    const finalStory = story || (t ? t.default_story : '');
     if (finalStory) setMultiText('.story-text', finalStory);
 
     // Hiding Sections
@@ -233,8 +131,8 @@ function renderInvitation(data) {
     }
 }
 
-function translateUI(lang) {
-    const t = UI_TRANSLATIONS[lang] || UI_TRANSLATIONS.ru;
+function translateUI(t) {
+    if (!t) return;
 
     // Core Invitation
     setMultiText('.subtitle', t.invite_text);
