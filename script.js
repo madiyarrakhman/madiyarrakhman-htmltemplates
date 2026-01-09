@@ -48,7 +48,7 @@ async function loadInvitation(uuid) {
         invitationData = data;
         currentLang = data.lang || 'ru';
 
-        renderInvitation(data.content);
+        renderInvitation(data);
 
     } catch (error) {
         console.error('Error loading invitation:', error);
@@ -57,30 +57,45 @@ async function loadInvitation(uuid) {
 }
 
 // 3. Render Content
-function renderInvitation(content) {
-    if (!content) return;
+function renderInvitation(data) {
+    if (!data) return;
+
+    // Favor top-level declared fields, fallback to content for backward compat
+    const groomName = data.groom_name || data.content?.groomName;
+    const brideName = data.bride_name || data.content?.brideName;
+    const eventDate = data.event_date || data.content?.date;
+    const location = data.event_location || data.content?.location;
+    const address = data.event_location || data.content?.address;
+    const story = data.content?.story;
 
     // Names
-    if (content.groomName) setMultiText('.groom-name', content.groomName);
-    if (content.brideName) setMultiText('.bride-name', content.brideName);
+    if (groomName) setMultiText('.groom-name', groomName);
+    if (brideName) setMultiText('.bride-name', brideName);
 
     // Date
-    if (content.date) {
-        const dateObj = new Date(content.date);
-        const dateStr = dateObj.toLocaleDateString(currentLang, {
-            day: 'numeric', month: 'long', year: 'numeric',
-            hour: '2-digit', minute: '2-digit'
-        });
-        setMultiText('.wedding-date', dateStr);
+    if (eventDate) {
+        // Check if it's a valid date string for localizing, or just plain text
+        let dateStr = eventDate;
+        const dateObj = new Date(eventDate);
 
-        // Update countdown target
-        updateCountdown(content.date);
+        if (!isNaN(dateObj.getTime())) {
+            dateStr = dateObj.toLocaleDateString(currentLang, {
+                day: 'numeric', month: 'long', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+            // Update countdown target if it's a valid date
+            updateCountdown(eventDate);
+        } else {
+            // If it's just a text like "15 июня", just set it
+            setMultiText('.wedding-date', eventDate);
+        }
+        setMultiText('.wedding-date', dateStr);
     }
 
     // Location
-    if (content.location) setMultiText('.location-name', content.location);
-    if (content.address) setMultiText('.location-address', content.address);
-    if (content.story) setMultiText('.story-text', content.story);
+    if (location) setMultiText('.location-name', location);
+    if (address) setMultiText('.location-address', address);
+    if (story) setMultiText('.story-text', story);
 
     // Map Coordinates (if provided)
     if (content.coordinates) {

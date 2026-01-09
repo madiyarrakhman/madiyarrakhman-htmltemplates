@@ -124,11 +124,25 @@ const initDB = async () => {
                 phone_number VARCHAR(50) NOT NULL,
                 template_code VARCHAR(50) REFERENCES templates(code),
                 lang VARCHAR(10) DEFAULT 'ru',
-                content JSONB NOT NULL, 
+                groom_name VARCHAR(255) NOT NULL,
+                bride_name VARCHAR(255) NOT NULL,
+                event_date VARCHAR(100) NOT NULL,
+                event_location VARCHAR(255) NOT NULL,
+                content JSONB DEFAULT '{}', 
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             );
         `);
+
+        // Migration: Add columns if they don't exist
+        try {
+            await pool.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS groom_name VARCHAR(255);`);
+            await pool.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS bride_name VARCHAR(255);`);
+            await pool.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS event_date VARCHAR(100);`);
+            await pool.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS event_location VARCHAR(255);`);
+        } catch (e) {
+            console.log('Migration note: some columns might already exist');
+        }
         await pool.query(`
             CREATE TABLE IF NOT EXISTS rsvp_responses (
                 id SERIAL PRIMARY KEY,
@@ -216,18 +230,24 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
 
 // Admin Create Invitation
 app.post('/api/admin/invitations', authenticateAdmin, async (req, res) => {
-    let { phoneNumber, templateCode, lang, content } = req.body;
-    if (!phoneNumber || !content) return res.status(400).json({ error: 'Missing fields' });
+    let { phoneNumber, templateCode, lang, groomName, brideName, eventDate, eventLocation, content } = req.body;
+
+    if (!phoneNumber || !groomName || !brideName || !eventDate || !eventLocation) {
+        return res.status(400).json({ error: 'Missing strictly required fields' });
+    }
 
     // Sanitize basic fields
     phoneNumber = sanitize(phoneNumber);
     lang = sanitize(lang);
+    groomName = sanitize(groomName);
+    brideName = sanitize(brideName);
+    eventLocation = sanitize(eventLocation);
 
     try {
         const result = await pool.query(
-            `INSERT INTO invitations (phone_number, template_code, lang, content) 
-             VALUES ($1, $2, $3, $4) RETURNING *`,
-            [phoneNumber, templateCode || 'starry-night', lang || 'ru', JSON.stringify(content)]
+            `INSERT INTO invitations (phone_number, template_code, lang, groom_name, bride_name, event_date, event_location, content) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+            [phoneNumber, templateCode || 'starry-night', lang || 'ru', groomName, brideName, eventDate, eventLocation, JSON.stringify(content || {})]
         );
         res.status(201).json({ success: true, invitation: result.rows[0] });
     } catch (error) {
@@ -245,16 +265,22 @@ app.post('/api/invitations', async (req, res) => {
         return res.status(403).json({ error: 'Forbidden' });
     }
 
-    let { phoneNumber, templateCode, lang, content } = req.body;
-    if (!phoneNumber || !content) return res.status(400).json({ error: 'Missing fields' });
+    let { phoneNumber, templateCode, lang, groomName, brideName, eventDate, eventLocation, content } = req.body;
+
+    if (!phoneNumber || !groomName || !brideName || !eventDate || !eventLocation) {
+        return res.status(400).json({ error: 'Missing strictly required fields' });
+    }
 
     phoneNumber = sanitize(phoneNumber);
+    groomName = sanitize(groomName);
+    brideName = sanitize(brideName);
+    eventLocation = sanitize(eventLocation);
 
     try {
         const result = await pool.query(
-            `INSERT INTO invitations (phone_number, template_code, lang, content) 
-             VALUES ($1, $2, $3, $4) RETURNING *`,
-            [phoneNumber, templateCode || 'starry-night', lang || 'ru', JSON.stringify(content)]
+            `INSERT INTO invitations (phone_number, template_code, lang, groom_name, bride_name, event_date, event_location, content) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+            [phoneNumber, templateCode || 'starry-night', lang || 'ru', groomName, brideName, eventDate, eventLocation, JSON.stringify(content || {})]
         );
 
         const invitation = result.rows[0];

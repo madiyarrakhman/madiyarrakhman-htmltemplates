@@ -42,13 +42,11 @@ curl -X POST https://your-domain.app/api/invitations \
   -H "Content-Type: application/json" \
   -d '{
     "phoneNumber": "+77012223344",
-    "lang": "ru",
-    "content": {
-      "groomName": "Арман",
-      "brideName": "Аружан",
-      "date": "2026-06-15 18:00",
-      "location": "Ресторан Royal"
-    }
+    "groomName": "Арман",
+    "brideName": "Аружан",
+    "eventDate": "15 июня 2026, 18:00",
+    "eventLocation": "Ресторан Royal, г. Алматы",
+    "lang": "ru"
   }'
 ```
 

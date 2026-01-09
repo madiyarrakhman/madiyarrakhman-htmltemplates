@@ -317,12 +317,11 @@
             const data = {
                 phoneNumber: document.getElementById('phone').value,
                 lang: document.getElementById('lang').value,
-                content: {
-                    groomName: document.getElementById('groom').value,
-                    brideName: document.getElementById('bride').value,
-                    date: document.getElementById('date').value,
-                    location: document.getElementById('location').value
-                }
+                groomName: document.getElementById('groom').value,
+                brideName: document.getElementById('bride').value,
+                eventDate: document.getElementById('date').value,
+                eventLocation: document.getElementById('location').value,
+                content: {} // Optional extra data
             };
 
             const res = await fetch('/api/admin/invitations', {

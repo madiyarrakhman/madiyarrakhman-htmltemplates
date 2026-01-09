@@ -171,10 +171,26 @@ components:
       type: object
       required:
         - phoneNumber
-        - content
+        - groomName
+        - brideName
+        - eventDate
+        - eventLocation
       properties:
         phoneNumber:
           type: string
+          example: "+77011234567"
+        groomName:
+          type: string
+          example: "Арман"
+        brideName:
+          type: string
+          example: "Аружан"
+        eventDate:
+          type: string
+          example: "2026-06-15 18:00"
+        eventLocation:
+          type: string
+          example: "Ресторан Royal"
         templateCode:
           type: string
           default: starry-night
@@ -183,7 +199,8 @@ components:
           default: ru
         content:
           type: object
-          description: Flexible JSON object containing bridesmaid names, groom names, date, location, etc.
+          description: Optional flexible JSON for additional data (story, music, etc.)
+          default: {}
   securitySchemes:
     cookieAuth:
       type: apiKey
