@@ -102,6 +102,6 @@ func main() {
 		port = "3008"
 	}
 
-	fmt.Printf("🚀 DDD Go Backend started on http://localhost:%s\n", port)
-	r.Run(":" + port)
+	fmt.Printf("🚀 DDD Go Backend started on 0.0.0.0:%s\n", port)
+	r.Run("0.0.0.0:" + port)
 }
