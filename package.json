@@ -4,12 +4,12 @@
     "description": "Full stack wedding invitation app",
     "main": "api/dist/server.js",
     "scripts": {
-        "start": "npm start --prefix api",
-        "build": "cd api && npm install && npm run build && cd ../frontend && npm install && npm run build",
-        "dev": "npm run dev --prefix api",
-        "test": "npm test --prefix api && npm test --prefix frontend -- --run",
-        "migrate": "npm run migrate --prefix api",
-        "generate-keys": "npm run generate-keys --prefix api"
+        "start": "cd backend && go run main.go",
+        "dev": "cd backend && go run main.go",
+        "build:frontend": "cd frontend && npm install && npm run build",
+        "build": "npm run build:frontend",
+        "test": "npm test --prefix api_backup && npm test --prefix frontend -- --run",
+        "migrate": "npm run migrate --prefix api_backup"
     },
     "dependencies": {
         "cookie-parser": "^1.4.7",
