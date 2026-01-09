@@ -38,7 +38,8 @@ export class AdminController {
             const list = await this.getInvitationsUseCase.execute();
             return res.status(200).json(list);
         } catch (error: any) {
-            return res.status(500).json({ error: 'Failed to fetch' });
+            console.error('[AdminController] getInvitations Error:', error);
+            return res.status(500).json({ error: 'Failed to fetch invitations', message: error.message });
         }
     }
 
@@ -47,7 +48,8 @@ export class AdminController {
             const stats = await this.getStatsUseCase.execute();
             return res.status(200).json(stats);
         } catch (error: any) {
-            return res.status(500).json({ error: 'Failed to fetch' });
+            console.error('[AdminController] getStats Error:', error);
+            return res.status(500).json({ error: 'Failed to fetch stats', message: error.message });
         }
     }
 
@@ -56,7 +58,8 @@ export class AdminController {
             const templates = await this.getTemplatesUseCase.execute();
             return res.status(200).json(templates);
         } catch (error: any) {
-            return res.status(500).json({ error: 'Database error' });
+            console.error('[AdminController] getTemplates Error:', error);
+            return res.status(500).json({ error: 'Database error', message: error.message });
         }
     }
 }

@@ -32,6 +32,7 @@ app.use(helmet({
             ...helmet.contentSecurityPolicy.getDefaultDirectives(),
             "img-src": ["'self'", "data:", "https:"],
             "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:"],
+            "script-src-attr": ["'unsafe-inline'"],
         },
     },
 }));
@@ -47,9 +48,12 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.static(rootDir));
 
-// 1. Setup Infrastructure
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL
+});
+
+pool.on('error', (err) => {
+    console.error('Unexpected error on idle client', err);
 });
 
 const invitationRepo = new PostgresInvitationRepository(pool);

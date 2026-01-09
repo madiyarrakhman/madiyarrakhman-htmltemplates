@@ -279,7 +279,12 @@
                 const templatesRes = await fetch('/api/admin/templates');
                 const templates = await templatesRes.json();
                 const templateSelect = document.getElementById('templateCode');
-                templateSelect.innerHTML = templates.map(t => `<option value="${t.code}">${t.name}</option>`).join('');
+                if (Array.isArray(templates)) {
+                    templateSelect.innerHTML = templates.map(t => `<option value="${t.code}">${t.name}</option>`).join('');
+                } else {
+                    console.error('Templates is not an array:', templates);
+                    templateSelect.innerHTML = '<option value="">Ошибка загрузки шаблонов</option>';
+                }
 
                 const invitesRes = await fetch('/api/admin/invitations');
                 const invites = await invitesRes.json();
@@ -298,7 +303,8 @@
                         </tr>
                     `).join('');
                 } else {
-                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">Нет данных или сессия истекла</td></tr>';
+                    console.error('Invites is not an array:', invites);
+                    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color: red;">Ошибка: ' + (invites.message || 'Нет данных') + '</td></tr>';
                 }
             } catch (err) {
                 console.error(err);
