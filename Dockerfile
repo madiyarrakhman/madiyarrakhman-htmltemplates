@@ -27,4 +27,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV FRONTEND_DIST=./frontend/dist
 
-CMD ["./main"]
+ENTRYPOINT ["/root/main"]
