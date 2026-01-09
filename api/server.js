@@ -299,7 +299,7 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '../admin.html
 app.get('/admin/login', (req, res) => res.sendFile(path.join(__dirname, '../admin-login.html')));
 app.get('/i/:uuid', (req, res) => res.sendFile(path.join(__dirname, '../wedding-invitation.html')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../wedding-invitation.html')));
-app.get('*', (req, res) => res.sendFile(path.join(__dirname, '../wedding-invitation.html')));
+app.get('*', (req, res) => res.status(404).sendFile(path.join(__dirname, '../404.html')));
 
 if (require.main === module) {
     app.listen(PORT, () => console.log(`🚀 Platform running on port ${PORT}`));
