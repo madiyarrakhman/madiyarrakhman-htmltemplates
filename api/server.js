@@ -101,65 +101,7 @@ const authenticateAdmin = (req, res, next) => {
     }
 };
 
-// Initialize database tables
-const initDB = async () => {
-    try {
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS templates (
-                id SERIAL PRIMARY KEY,
-                code VARCHAR(50) UNIQUE NOT NULL,
-                name VARCHAR(100) NOT NULL,
-                is_active BOOLEAN DEFAULT true
-            );
-        `);
-        await pool.query(`
-            INSERT INTO templates (code, name) 
-            VALUES ('starry-night', 'Звездная ночь') 
-            ON CONFLICT (code) DO NOTHING;
-        `);
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS invitations (
-                id SERIAL PRIMARY KEY,
-                uuid UUID UNIQUE DEFAULT gen_random_uuid(),
-                phone_number VARCHAR(50) NOT NULL,
-                template_code VARCHAR(50) REFERENCES templates(code),
-                lang VARCHAR(10) DEFAULT 'ru',
-                groom_name VARCHAR(255) NOT NULL,
-                bride_name VARCHAR(255) NOT NULL,
-                event_date VARCHAR(100) NOT NULL,
-                event_location VARCHAR(255) NOT NULL,
-                content JSONB DEFAULT '{}', 
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-
-        // Migration: Add columns if they don't exist
-        try {
-            await pool.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS groom_name VARCHAR(255);`);
-            await pool.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS bride_name VARCHAR(255);`);
-            await pool.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS event_date VARCHAR(100);`);
-            await pool.query(`ALTER TABLE invitations ADD COLUMN IF NOT EXISTS event_location VARCHAR(255);`);
-        } catch (e) {
-            console.log('Migration note: some columns might already exist');
-        }
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS rsvp_responses (
-                id SERIAL PRIMARY KEY,
-                invitation_uuid UUID REFERENCES invitations(uuid),
-                guest_name VARCHAR(255),
-                attendance VARCHAR(10) NOT NULL,
-                guest_count INTEGER DEFAULT 1,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-        console.log('✅ Database tables initialized');
-    } catch (error) {
-        console.error('❌ Error initializing database:', error);
-    }
-};
-
-initDB();
+// Database tables are now managed via migrations (node api/migrate.js)
 
 // --- ADMIN API ---
 
