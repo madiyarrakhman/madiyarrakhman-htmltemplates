@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import StarryNightTemplate from '@/components/templates/StarryNightTemplate.vue'
 
-const mockInvitation = {
+const mockInvitation: any = {
     id: 'test-uuid-starry',
     templateId: 'deep-starry-night',
     groomName: 'Alex',
@@ -10,9 +10,9 @@ const mockInvitation = {
     eventDate: '2026-07-15T18:00:00Z',
     eventLocation: 'Grand Hotel',
     story: 'Starry night story...',
-    schedule: JSON.stringify([
-        { time: '18:00', event: 'Ceremony' }
-    ]),
+    schedule: [
+        { time: '18:00', name: 'Ceremony', description: 'Exchange of vows' }
+    ],
     content: {}
 }
 
@@ -49,8 +49,8 @@ describe('StarryNightTemplate.vue', () => {
         await wrapper.find('form').trigger('submit')
 
         await vi.waitFor(() => {
-            // Use localized text from ru.json
-            expect(wrapper.text()).toContain('Благодарим за ответ!')
+            // Use localized text from ru.json (success_title)
+            expect(wrapper.text()).toContain('Спасибо!')
         })
     })
 })

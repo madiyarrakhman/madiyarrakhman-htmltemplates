@@ -38,46 +38,56 @@ app.use(helmet({
     },
 }));
 
+const isTest = process.env.NODE_ENV === 'test' || !!process.env.JEST_WORKER_ID;
+
 const limiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100
 });
-app.use('/api/', limiter);
+
+if (!isTest) {
+    app.use('/api/', limiter);
+}
 
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.static(rootDir));
 
-if (!process.env.DATABASE_URL) {
-    console.warn('⚠️ WARNING: DATABASE_URL is not defined in .env file!');
-}
+// Настройка БД
+const dbUrl = process.env.DATABASE_URL;
+const isLocal = !dbUrl || dbUrl.includes('localhost') || dbUrl.includes('127.0.0.1');
 
-const isLocal = !process.env.DATABASE_URL ||
-    process.env.DATABASE_URL.includes('localhost') ||
-    process.env.DATABASE_URL.includes('127.0.0.1');
+const poolConfig = {
+    connectionString: dbUrl,
+    ssl: (isLocal || isTest) ? false : { rejectUnauthorized: false }
+};
 
-const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: isLocal ? false : { rejectUnauthorized: false }
-});
+const pool = new Pool(poolConfig);
 
-if (!isLocal) {
+if (!isLocal && !isTest) {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 }
-console.log(`📡 Database SSL: ${isLocal ? 'Disabled (Local)' : 'Enabled (Production/Remote)'}`);
+
+if (!isTest) {
+    if (!dbUrl) console.warn('⚠️ WARNING: DATABASE_URL is not defined!');
+    console.log(`📡 Database Mode: ${isLocal ? 'Local/Test' : 'Production'}`);
+    console.log(`📡 Database SSL: ${poolConfig.ssl ? 'Enabled' : 'Disabled'}`);
+}
 
 pool.on('error', (err) => {
     console.error('Unexpected error on idle client', err);
 });
 
 // Immediate connection check
-pool.query('SELECT NOW()')
-    .then(() => console.log('✅ Database Connection: SUCCESS'))
-    .catch(err => {
-        console.error('❌ Database Connection: FAILED');
-        console.error('Error Details:', err.message);
-    });
+if (!isTest) {
+    pool.query('SELECT NOW()')
+        .then(() => console.log('✅ Database Connection: SUCCESS'))
+        .catch(err => {
+            console.error('❌ Database Connection: FAILED');
+            console.error('Error Details:', err.message);
+        });
+}
 
 const invitationRepo = new PostgresInvitationRepository(pool);
 const adminRepo = new PostgresAdminRepository(pool);
@@ -152,5 +162,5 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(rootDir, 'index.html'));
 });
 
-// Export for server
-export { app };
+// Export for server and tests
+export { app, pool };

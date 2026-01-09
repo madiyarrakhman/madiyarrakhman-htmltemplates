@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import SilkIvoryTemplate from '@/components/templates/SilkIvoryTemplate.vue'
 
-const mockInvitation = {
+const mockInvitation: any = {
     id: 'test-uuid',
     templateId: 'silk-ivory',
     groomName: 'Ivan',
@@ -10,10 +10,10 @@ const mockInvitation = {
     eventDate: '2026-06-01T15:00:00Z',
     eventLocation: 'Test Location',
     story: 'Once upon a time...',
-    schedule: JSON.stringify([
-        { time: '15:00', event: 'Ceremony' },
-        { time: '17:00', event: 'Dinner' }
-    ]),
+    schedule: [
+        { time: '15:00', name: 'Ceremony', description: 'At the central park' },
+        { time: '17:00', name: 'Dinner', description: 'At the restaurant' }
+    ],
     content: {}
 }
 
