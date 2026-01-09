@@ -4,6 +4,8 @@ import { fileURLToPath } from 'url';
 import { Pool } from 'pg';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
 import { PostgresInvitationRepository } from './infrastructure/database/PostgresInvitationRepository.js';
 import { PostgresAdminRepository } from './infrastructure/database/PostgresAdminRepository.js';
 import { SubmitRSVPUseCase } from './application/rsvp/submit-rsvp.use-case.js';
@@ -19,9 +21,26 @@ import { authenticateAdmin } from './infrastructure/api/middleware/AuthMiddlewar
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const rootDir = path.join(__dirname, '../../../');
+// From api/dist/server.js up to api/ up to root/
+const rootDir = path.join(__dirname, '../../');
 
 // Middleware
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "img-src": ["'self'", "data:", "https:"],
+            "script-src": ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https:"],
+        },
+    },
+}));
+
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100
+});
+app.use('/api/', limiter);
+
 app.use(cors());
 app.use(cookieParser());
 app.use(express.json());
@@ -74,6 +93,9 @@ app.get('/api/admin/invitations', auth, (req, res) => adminController.getInvitat
 app.get('/api/admin/stats', auth, (req, res) => adminController.getStats(req, res));
 app.get('/api/admin/templates', auth, (req, res) => adminController.getTemplates(req, res));
 app.post('/api/admin/invitations', auth, (req, res) => invitationController.create(req, res));
+
+// Health check for DO/Heroku
+app.get('/api/health', (req, res) => res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() }));
 
 // --- Frontend & Redirects ---
 
