@@ -7,16 +7,14 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib" // Standard library driver
 	"github.com/joho/godotenv"
 	"github.com/pressly/goose/v3"
 
+	"github.com/madiyarrakhman/wedding-invitation/backend/internal/infra/api"
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/infra/api/handlers"
-	"github.com/madiyarrakhman/wedding-invitation/backend/internal/infra/api/middleware"
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/infra/database"
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/usecase"
 	"github.com/madiyarrakhman/wedding-invitation/backend/migrations"
@@ -85,46 +83,13 @@ func main() {
 	adminHandler := handlers.NewAdminHandler(adminUC, invUC)
 
 	// 3. Router
-	r := gin.Default()
-
-	api := r.Group("/api")
-	{
-		api.GET("/health", func(c *gin.Context) {
-			c.JSON(200, gin.H{"status": "ok", "timestamp": time.Now()})
-		})
-
-		api.GET("/invitations/:uuid", invHandler.GetInvitation)
-		api.POST("/rsvp/:uuid", invHandler.SubmitRSVP)
-
-		api.POST("/admin/login", adminHandler.Login)
-		api.POST("/admin/logout", adminHandler.Logout)
-
-		admin := api.Group("/admin")
-		admin.Use(middleware.AuthMiddleware(jwtSecret))
-		{
-			admin.GET("/stats", adminHandler.GetStats)
-			admin.GET("/invitations", adminHandler.GetInvitationsList)
-			admin.POST("/invitations", adminHandler.CreateInvitation)
-			admin.GET("/templates", adminHandler.GetTemplates)
-		}
-	}
-
-	r.GET("/s/:shortCode", invHandler.RedirectShortCode)
-
-	// Static Files Frontend
+	// Determine frontend dist location
 	rootDir := os.Getenv("FRONTEND_DIST")
 	if rootDir == "" {
 		rootDir = filepath.Join("..", "frontend", "dist")
 	}
 
-	r.Static("/assets", filepath.Join(rootDir, "assets"))
-	r.Static("/images", filepath.Join(rootDir, "images"))
-	r.StaticFile("/favicon.ico", filepath.Join(rootDir, "favicon.ico"))
-
-	// Fallback for SPA
-	r.NoRoute(func(c *gin.Context) {
-		c.File(filepath.Join(rootDir, "index.html"))
-	})
+	r := api.SetupRouter(invHandler, adminHandler, jwtSecret, rootDir)
 
 	port := os.Getenv("PORT")
 	if port == "" {

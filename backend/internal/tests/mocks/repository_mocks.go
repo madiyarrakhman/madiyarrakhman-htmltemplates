@@ -1,4 +1,4 @@
-package usecase
+package mocks
 
 import (
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/domain"
