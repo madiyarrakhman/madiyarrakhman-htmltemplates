@@ -47,10 +47,9 @@ const fetchInvitation = async () => {
         const data = await res.json()
         
         // Map API response to our Interface
-        // The API returns camelCase properties directly now based on previous context
         invitation.value = {
             id: data.id,
-            templateId: data.templateCode || data.templateId || data.template?.name || 'default', // Map templateCode
+            templateId: data.templateCode || data.templateId || data.template?.name || 'default',
             groomName: data.groomName || data.content?.groomName,
             brideName: data.brideName || data.content?.brideName,
             eventDate: data.eventDate || data.content?.eventDate,
@@ -59,6 +58,12 @@ const fetchInvitation = async () => {
             schedule: data.schedule || data.content?.schedule,
             content: data.content
         }
+        
+        // Set language from invitation data
+        if (data.lang) {
+            locale.value = data.lang
+            document.documentElement.lang = data.lang
+        }
     } catch (e: any) {
         error.value = e.message || 'An error occurred'
     } finally {
@@ -66,16 +71,8 @@ const fetchInvitation = async () => {
     }
 }
 
-const setLanguage = (lang: string) => {
-    locale.value = lang
-    localStorage.setItem('preferred_lang', lang)
-    document.documentElement.lang = lang
-}
-
 onMounted(() => {
     fetchInvitation()
-    const savedLang = localStorage.getItem('preferred_lang') || 'ru'
-    setLanguage(savedLang)
 })
 </script>
 
@@ -91,13 +88,6 @@ onMounted(() => {
         </div>
 
         <div v-else-if="invitation">
-            <!-- Floating Language Switcher -->
-             <div class="lang-floater">
-                <button :class="{ active: locale === 'ru' }" @click="setLanguage('ru')">RU</button>
-                <button :class="{ active: locale === 'kk' }" @click="setLanguage('kk')">KK</button>
-                <button :class="{ active: locale === 'en' }" @click="setLanguage('en')">EN</button>
-            </div>
-
             <!-- Dynamic Template Component -->
             <component :is="templateComponent" :invitation="invitation" />
         </div>
@@ -126,39 +116,5 @@ onMounted(() => {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
-}
-
-.lang-floater {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    z-index: 1000;
-    background: rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    padding: 5px;
-    border-radius: 20px;
-    display: flex;
-    gap: 5px;
-}
-
-.lang-floater button {
-    background: none;
-    border: none;
-    color: rgba(255, 255, 255, 0.7);
-    padding: 5px 10px;
-    border-radius: 15px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    font-weight: 600;
-    transition: all 0.3s;
-}
-
-.lang-floater button.active {
-    background: #fff;
-    color: #000;
-}
-
-.lang-floater button:hover:not(.active) {
-    color: #fff;
 }
 </style>
