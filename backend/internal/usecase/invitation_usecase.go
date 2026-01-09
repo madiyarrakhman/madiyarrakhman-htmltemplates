@@ -3,6 +3,10 @@ package usecase
 import (
 	"errors"
 
+	"crypto/sha256"
+	"encoding/base64"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/domain"
 )
@@ -40,7 +44,7 @@ func (u *InvitationUseCase) CreateInvitation(inv *domain.Invitation) error {
 		inv.UUID = uuid.New().String()
 	}
 	if inv.ShortCode == "" {
-		inv.ShortCode = generateShortCode()
+		inv.ShortCode = generateShortCode(inv.UUID)
 	}
 	return u.repo.Create(inv)
 }
@@ -54,12 +58,20 @@ func (u *InvitationUseCase) ResolveShortCode(code string) (string, error) {
 }
 
 // Private helper to generate short code (normally a separate domain service)
-func generateShortCode() string {
-	const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, 6)
-	u := uuid.New().String()
-	for i := 0; i < 6; i++ {
-		b[i] = chars[u[i]%byte(len(chars))]
+// Private helper to generate short code (normally a separate domain service)
+func generateShortCode(seedUUID string) string {
+	// Combine UUID and current nanosecond timestamp for uniqueness
+	data := seedUUID + time.Now().String()
+	hash := sha256.Sum256([]byte(data))
+
+	// Encode hash to make it URL-safe string
+	encoded := base64.RawURLEncoding.EncodeToString(hash[:])
+
+	// Take first 6 characters.
+	// In a real high-load system, you'd check for collisions in DB,
+	// but for this scale, 6 chars of SHA256 is effectively unique.
+	if len(encoded) > 6 {
+		return encoded[:6]
 	}
-	return string(b)
+	return encoded
 }
