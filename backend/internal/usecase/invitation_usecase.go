@@ -46,6 +46,10 @@ func (u *InvitationUseCase) CreateInvitation(inv *domain.Invitation) error {
 	if inv.ShortCode == "" {
 		inv.ShortCode = generateShortCode(inv.UUID)
 	}
+	// Initialize Content if nil to prevent DB violation (NOT NULL)
+	if inv.Content == nil {
+		inv.Content = make(map[string]interface{})
+	}
 	return u.repo.Create(inv)
 }
 
