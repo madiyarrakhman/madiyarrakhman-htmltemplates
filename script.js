@@ -184,11 +184,11 @@ function renderInvitation(data) {
     // Apply translations first
     translateUI(currentLang);
 
-    // Favor top-level declared fields, fallback to content for backward compat
-    const groomName = data.groom_name || data.content?.groomName;
-    const brideName = data.bride_name || data.content?.brideName;
-    const eventDate = data.event_date || data.content?.date;
-    const location = data.event_location || data.content?.location;
+    // Favor top-level declared fields (camelCase from repository)
+    const groomName = data.groomName || data.groom_name || data.content?.groomName;
+    const brideName = data.brideName || data.bride_name || data.content?.brideName;
+    const eventDate = data.eventDate || data.event_date || data.content?.date;
+    const location = data.eventLocation || data.event_location || data.content?.location;
     const address = data.content?.address || '';
     const story = data.content?.story;
 

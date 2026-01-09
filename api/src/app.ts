@@ -1,4 +1,5 @@
 import express from 'express';
+import 'dotenv/config';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { Pool } from 'pg';
@@ -48,6 +49,10 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.static(rootDir));
 
+if (!process.env.DATABASE_URL) {
+    console.warn('⚠️ WARNING: DATABASE_URL is not defined in .env file!');
+}
+
 const isLocal = !process.env.DATABASE_URL ||
     process.env.DATABASE_URL.includes('localhost') ||
     process.env.DATABASE_URL.includes('127.0.0.1');
@@ -65,6 +70,14 @@ console.log(`📡 Database SSL: ${isLocal ? 'Disabled (Local)' : 'Enabled (Produ
 pool.on('error', (err) => {
     console.error('Unexpected error on idle client', err);
 });
+
+// Immediate connection check
+pool.query('SELECT NOW()')
+    .then(() => console.log('✅ Database Connection: SUCCESS'))
+    .catch(err => {
+        console.error('❌ Database Connection: FAILED');
+        console.error('Error Details:', err.message);
+    });
 
 const invitationRepo = new PostgresInvitationRepository(pool);
 const adminRepo = new PostgresAdminRepository(pool);
