@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { format } from 'date-fns'
-import { ru, enUS } from 'date-fns/locale' // You might need to add 'kk' locale if available or standout
+import { ru, enUS, kk } from 'date-fns/locale' // You might need to add 'kk' locale if available or standout
 import type { Invitation } from '@/types/invitation'
 
 const props = defineProps<{
@@ -27,6 +27,7 @@ const formattedDate = computed(() => {
   // Falling back to 'ru' for 'kk' or custom formatting might be needed.
   let dateLocale = ru
   if (locale.value === 'en') dateLocale = enUS
+  if (locale.value === 'kk') dateLocale = kk
   
   return format(dateObj, 'd MMMM yyyy', { locale: dateLocale })
 })
@@ -64,7 +65,7 @@ const submitRsvp = async () => {
         isSuccess.value = true
     } catch (e) {
         console.error('RSVP Error', e)
-        alert('Error submitting RSVP')
+        alert(t('rsvp_error'))
     } finally {
         isSubmitting.value = false
     }

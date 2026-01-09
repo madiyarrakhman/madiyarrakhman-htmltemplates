@@ -5,7 +5,7 @@ import { useI18n } from 'vue-i18n'
 import type { Invitation } from '@/types/invitation'
 
 const route = useRoute()
-const { locale } = useI18n()
+const { locale, t } = useI18n()
 
 // Async components to load localized templates on demand
 const StarryNightTemplate = defineAsyncComponent(() => import('@/components/templates/StarryNightTemplate.vue'))
@@ -33,7 +33,7 @@ const templateComponent = computed(() => {
 const fetchInvitation = async () => {
     const uuid = route.params.uuid as string
     if (!uuid) {
-        error.value = 'Invalid invitation link'
+        error.value = t('error_invalid_link')
         isLoading.value = false
         return
     }
@@ -41,8 +41,8 @@ const fetchInvitation = async () => {
     try {
         const res = await fetch(`/api/invitations/${uuid}`)
         if (!res.ok) {
-            if (res.status === 404) throw new Error('Invitation not found')
-            throw new Error('Failed to load invitation')
+            if (res.status === 404) throw new Error(t('error_not_found'))
+            throw new Error(t('error_load_failed'))
         }
         const data = await res.json()
         
@@ -65,7 +65,7 @@ const fetchInvitation = async () => {
             document.documentElement.lang = data.lang
         }
     } catch (e: any) {
-        error.value = e.message || 'An error occurred'
+        error.value = e.message || t('error_unknown')
     } finally {
         isLoading.value = false
     }

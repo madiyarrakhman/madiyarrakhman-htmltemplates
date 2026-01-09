@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
+const { t, locale } = useI18n()
 const router = useRouter()
 
 // Data Models
@@ -145,46 +147,46 @@ onMounted(() => {
     <div class="admin-dashboard">
         <nav>
             <h2 class="nav-title">INVITE ADMIN</h2>
-            <button class="btn" @click="logout">Выход</button>
+            <button class="btn" @click="logout">{{ t('admin_logout_btn') }}</button>
         </nav>
 
         <div class="container">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>Приглашений</h3>
+                    <h3>{{ t('admin_invites_stat') }}</h3>
                     <p>{{ stats.totalInvitations }}</p>
                 </div>
                 <div class="stat-card">
-                    <h3>RSVP всего</h3>
+                    <h3>{{ t('admin_rsvp_stat') }}</h3>
                     <p>{{ stats.totalRSVPs }}</p>
                 </div>
                 <div class="stat-card">
-                    <h3>Гостей придет</h3>
+                    <h3>{{ t('admin_guests_stat') }}</h3>
                     <p>{{ stats.totalGuests }}</p>
                 </div>
             </div>
 
             <div class="main-section">
                 <div class="section-header">
-                    <h3>Все ссылки</h3>
-                    <button class="btn btn-primary" @click="showModal">+ Создать приглашение</button>
+                    <h3>{{ t('admin_all_links') }}</h3>
+                    <button class="btn btn-primary" @click="showModal">{{ t('admin_create_btn') }}</button>
                 </div>
 
                 <div v-if="error" class="error-banner">
                     {{ error }}
                 </div>
 
-                <div v-if="isLoading" style="text-align: center; padding: 2rem;">Загрузка...</div>
+                <div v-if="isLoading" style="text-align: center; padding: 2rem;">{{ t('admin_loading') }}</div>
                 
                 <table v-else-if="invitations.length > 0">
                     <thead>
                         <tr>
-                            <th>Телефон</th>
-                            <th>Шаблон</th>
-                            <th>Язык</th>
-                            <th>RSVP</th>
-                            <th>Гостей</th>
-                            <th>Ссылка</th>
+                            <th>{{ t('admin_col_phone') }}</th>
+                            <th>{{ t('admin_col_template') }}</th>
+                            <th>{{ t('admin_col_lang') }}</th>
+                            <th>{{ t('admin_col_rsvp') }}</th>
+                            <th>{{ t('admin_col_guests') }}</th>
+                            <th>{{ t('admin_col_link') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -195,14 +197,14 @@ onMounted(() => {
                             <td>{{ invite.rsvpCount }}</td>
                             <td>{{ invite.approvedGuests }}</td>
                             <td>
-                                <router-link :to="'/i/' + invite.uuid" target="_blank" class="open-link">Открыть</router-link>
-                                <span class="copy-link" @click="copyLink(invite.shortCode, invite.uuid)">Копировать ссылке</span>
+                                <router-link :to="'/i/' + invite.uuid" target="_blank" class="open-link">{{ t('admin_open_link') }}</router-link>
+                                <span class="copy-link" @click="copyLink(invite.shortCode, invite.uuid)">{{ t('admin_copy_link') }}</span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
                 <div v-else style="text-align: center; padding: 2rem; color: #666;">
-                    Список приглашений пуст
+                    {{ t('admin_empty_list') }}
                 </div>
             </div>
         </div>
@@ -210,22 +212,22 @@ onMounted(() => {
         <!-- Modal -->
         <div v-if="isModalOpen" class="modal-overlay">
             <div class="modal-content">
-                <h3>Новое приглашение</h3>
+                <h3>{{ t('admin_modal_title') }}</h3>
                 <form @submit.prevent="createInvitation">
                     <div class="form-group">
-                        <label>Номер телефона</label>
+                        <label>{{ t('admin_field_phone') }}</label>
                         <input type="text" v-model="createForm.phoneNumber" required>
                     </div>
                     <div class="form-group">
-                        <label>Язык</label>
+                        <label>{{ t('admin_field_lang') }}</label>
                         <select v-model="createForm.lang">
-                            <option value="ru">Русский</option>
-                            <option value="kk">Казахский</option>
-                            <option value="en">English</option>
+                            <option value="ru">{{ t('lang_ru') }}</option>
+                            <option value="kk">{{ t('lang_kk') }}</option>
+                            <option value="en">{{ t('lang_en') }}</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Шаблон дизайна</label>
+                        <label>{{ t('admin_field_template') }}</label>
                         <select v-model="createForm.templateCode">
                             <option v-for="t in availableTemplates" :key="t.code" :value="t.code">
                                 {{ t.name }}
@@ -233,24 +235,24 @@ onMounted(() => {
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Имя Жениха</label>
+                        <label>{{ t('admin_field_groom') }}</label>
                         <input type="text" v-model="createForm.groomName" required>
                     </div>
                     <div class="form-group">
-                        <label>Имя Невесты</label>
+                        <label>{{ t('admin_field_bride') }}</label>
                         <input type="text" v-model="createForm.brideName" required>
                     </div>
                     <div class="form-group">
-                        <label>Дата и время</label>
+                        <label>{{ t('admin_field_date') }}</label>
                         <input type="datetime-local" v-model="createForm.eventDate" required>
                     </div>
                     <div class="form-group">
-                        <label>Место</label>
+                        <label>{{ t('admin_field_location') }}</label>
                         <input type="text" v-model="createForm.eventLocation" required>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="btn btn-primary flex-1">Создать</button>
-                        <button type="button" class="btn flex-1" @click="hideModal">Отмена</button>
+                        <button type="submit" class="btn btn-primary flex-1">{{ t('admin_create_confirm') }}</button>
+                        <button type="button" class="btn flex-1" @click="hideModal">{{ t('admin_cancel') }}</button>
                     </div>
                 </form>
             </div>

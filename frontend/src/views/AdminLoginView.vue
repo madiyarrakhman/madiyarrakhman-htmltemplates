@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const router = useRouter()
 const username = ref('')
 const password = ref('')
@@ -19,11 +21,11 @@ const handleLogin = async () => {
         if (res.ok) {
             router.push('/admin')
         } else {
-            error.value = 'Неверный логин или пароль'
+            error.value = t('admin_login_error')
         }
     } catch (err) {
         console.error(err)
-        error.value = 'Ошибка сервера'
+        error.value = t('admin_server_error')
     }
 }
 </script>
@@ -31,17 +33,17 @@ const handleLogin = async () => {
 <template>
     <div class="admin-login-page">
         <div class="login-card">
-            <h1>ADMIN PANEL</h1>
+            <h1>{{ t('admin_login_title') }}</h1>
             <form @submit.prevent="handleLogin">
                 <div class="form-group">
-                    <label>Логин</label>
+                    <label>{{ t('admin_username_label') }}</label>
                     <input type="text" v-model="username" required>
                 </div>
                 <div class="form-group">
-                    <label>Пароль</label>
+                    <label>{{ t('admin_password_label') }}</label>
                     <input type="password" v-model="password" required>
                 </div>
-                <button type="submit">Войти</button>
+                <button type="submit">{{ t('admin_login_btn') }}</button>
                 <div v-if="error" class="error">{{ error }}</div>
             </form>
         </div>

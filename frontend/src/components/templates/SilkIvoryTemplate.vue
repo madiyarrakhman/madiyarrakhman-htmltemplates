@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { format } from 'date-fns'
-import { ru, enUS } from 'date-fns/locale'
+import { ru, enUS, kk } from 'date-fns/locale'
 import type { Invitation } from '@/types/invitation'
 
 const props = defineProps<{
@@ -24,6 +24,7 @@ const formattedDate = computed(() => {
   const dateObj = new Date(props.invitation.eventDate)
   let dateLocale = ru
   if (locale.value === 'en') dateLocale = enUS
+  if (locale.value === 'kk') dateLocale = kk
   
   return format(dateObj, 'd MMMM yyyy', { locale: dateLocale })
 })
@@ -55,7 +56,7 @@ const submitRsvp = async () => {
         isSuccess.value = true
     } catch (e) {
         console.error('RSVP Error', e)
-        alert('Error submitting RSVP')
+        alert(t('rsvp_error'))
     } finally {
         isSubmitting.value = false
     }
@@ -132,7 +133,7 @@ onMounted(() => {
                  <!-- Static Fallback Items using translations -->
                  <div class="schedule-item glass-panel fade-in-scroll">
                     <span class="time">16:00</span>
-                    <h3 class="event-name">Welcome</h3>
+                    <h3 class="event-name">{{ t('schedule.0.name') }}</h3>
                     <p class="detail-subtext">{{ t('schedule.0.desc') }}</p>
                 </div>
                 <div class="schedule-item glass-panel fade-in-scroll">
