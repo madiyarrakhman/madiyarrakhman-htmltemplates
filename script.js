@@ -131,73 +131,34 @@ async function renderInvitation(data) {
     }
 }
 
+// 4. Translate UI
 function translateUI(t) {
     if (!t) return;
 
-    // Core Invitation
+    // --- Common Elements ---
     setMultiText('.subtitle', t.invite_text);
-    setMultiText('.hero-invite-text', t.invite_text_silk);
-    setMultiText('.story-section .section-title', t.story_title);
-    setMultiText('.gallery-section .section-title', t.gallery_title);
-
-    // Titles & Sections
-    const titles = document.querySelectorAll('.section-title');
-    if (titles.length >= 4) {
-        // Many templates use index-based titles
-        if (titles[0]) titles[0].innerText = t.story_title;
-        if (titles[1]) titles[1].innerText = t.gallery_title_silk || t.gallery_title;
-        if (titles[2]) titles[2].innerText = t.details_title_silk || t.details_title;
-        if (titles[3]) titles[3].innerText = (titles.length > 4) ? t.location_title_silk : t.rsvp_title;
-        if (titles[4]) titles[4].innerText = t.rsvp_title;
-    }
-
-    // RSVP Form
-    setMultiText('.rsvp-section .section-title', t.rsvp_title);
-    setMultiText('.rsvp-text', t.rsvp_text);
-    const rsvpSubtext = document.querySelector('.rsvp-section p');
-    if (rsvpSubtext && rsvpSubtext.innerText.includes('подтвердите')) {
-        rsvpSubtext.innerText = t.rsvp_text_silk;
-    }
-
-    const nameInput = document.getElementById('guestName');
-    if (nameInput) {
-        nameInput.placeholder = nameInput.classList.contains('input-silk') ? t.name_placeholder_silk : t.name_placeholder;
-        const nameLabel = nameInput.previousElementSibling;
-        if (nameLabel && nameLabel.tagName === 'LABEL') nameLabel.innerText = t.name_label;
-    }
-
-    // Attendance Radios
-    const radios = document.querySelectorAll('input[name="attendance"]');
-    radios.forEach(r => {
-        const span = r.nextElementSibling;
-        if (span && span.tagName === 'SPAN') {
-            if (r.value === 'yes') {
-                span.innerText = span.parentElement.classList.contains('radio-option') ? t.attending_yes_silk : t.attending_yes;
-            } else {
-                span.innerText = span.parentElement.classList.contains('radio-option') ? t.attending_no_silk : t.attending_no;
-            }
-        }
-    });
-
-    setMultiText('label[for="guestCount"]', t.guest_count_label);
-    const countLabel_silk = document.querySelector('.input-group label:last-of-type');
-    if (countLabel_silk && countLabel_silk.innerText.includes('Количество')) {
-        countLabel_silk.innerText = t.guest_count_label;
-    }
-
-    setMultiText('.submit-btn span, .submit-silk', t.submit_btn);
-
-    // Success Message
-    const successTitle = document.querySelector('#successMessage p:first-child');
-    if (successTitle) successTitle.innerText = t.success_title_silk || t.success_title;
-    const successText = document.querySelector('#successMessage p:last-child');
-    if (successText) successText.innerText = t.success_text_silk || t.success_text;
-
-    // Misc
-    setMultiText('.scroll-indicator span', t.scroll_down);
+    setMultiText('.hero-invite-text', t.invite_text_silk); // Specific to silk
+    setMultiText('.scroll-down', t.scroll_down); // Text might be hidden in CSS but good to have
     setMultiText('.action-link', t.map_link);
 
-    // Schedule (Silk & Ivory)
+    // --- Sections Titles ---
+    // We try to find specific section headers by ID first, then fall back to class
+    const storyTitle = document.querySelector('.story-section .section-title') || document.querySelector('section:nth-of-type(2) .section-title');
+    if (storyTitle) storyTitle.innerText = t.story_title;
+
+    const galleryTitle = document.querySelector('#gallery .section-title');
+    if (galleryTitle) galleryTitle.innerText = t.gallery_title_silk || t.gallery_title;
+
+    const detailsTitle = document.querySelector('#schedule .section-title'); // Silk uses #schedule for details/program
+    if (detailsTitle) detailsTitle.innerText = t.details_title_silk;
+
+    const locationTitle = document.querySelector('#location .section-title');
+    if (locationTitle) locationTitle.innerText = t.location_title_silk;
+
+    const rsvpTitle = document.querySelector('#rsvp .section-title');
+    if (rsvpTitle) rsvpTitle.innerText = t.rsvp_title_silk || t.rsvp_title;
+
+    // --- Schedule Items (Silk Specific) ---
     const scheduleItems = document.querySelectorAll('.schedule-item');
     if (scheduleItems.length > 0 && t.schedule) {
         scheduleItems.forEach((item, index) => {
@@ -211,6 +172,62 @@ function translateUI(t) {
             }
         });
     }
+
+    // --- RSVP Form ---
+    setMultiText('.rsvp-text', t.rsvp_text);
+    const rsvpSubtext = document.querySelector('#rsvp p'); // Subtext under title
+    if (rsvpSubtext) rsvpSubtext.innerText = t.rsvp_text_silk;
+
+    // Inputs & Labels
+    const inputs = document.querySelectorAll('#rsvpForm input');
+    inputs.forEach(input => {
+        const label = input.previousElementSibling || input.parentElement.previousElementSibling;
+
+        if (input.id === 'guestName') {
+            if (label && label.tagName === 'LABEL') label.innerText = t.name_label;
+            input.placeholder = t.name_placeholder_silk;
+        }
+        if (input.id === 'guestCount') {
+            const group = input.closest('.input-group');
+            if (group) {
+                const l = group.querySelector('label');
+                if (l) l.innerText = t.guest_count_label;
+            }
+        }
+    });
+
+    // Attendance Radio Labels (Silk structure is different)
+    const radioLabels = document.querySelectorAll('.radio-option span');
+    if (radioLabels.length >= 2) {
+        radioLabels[0].innerText = t.attending_yes_silk;
+        radioLabels[1].innerText = t.attending_no_silk;
+    }
+
+    // Attendance Label Group
+    const attendanceGroup = document.querySelector('.radio-options');
+    if (attendanceGroup) {
+        const parent = attendanceGroup.closest('.input-group');
+        if (parent) {
+            const l = parent.querySelector('label');
+            if (l) l.innerText = t.attendance_label || "Ваше присутствие";
+        }
+    }
+
+    // Buttons & Messages
+    setMultiText('.submit-btn span', t.submit_btn); // Standard
+    setMultiText('.submit-silk', t.submit_btn); // Silk
+
+    const successDiv = document.getElementById('successMessage');
+    if (successDiv) {
+        const title = successDiv.querySelector('p:first-child');
+        const text = successDiv.querySelector('p:last-child');
+        if (title) title.innerText = t.success_title_silk || t.success_title;
+        if (text) text.innerText = t.success_text_silk || t.success_text;
+    }
+
+    // Footer
+    const footerText = document.querySelector('footer p');
+    if (footerText) footerText.innerText = t.footer_copyright || "2026 — FOREVER";
 }
 
 // Helper to set text for multiple elements with same class
