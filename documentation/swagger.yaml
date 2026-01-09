@@ -1,0 +1,217 @@
+openapi: 3.0.0
+info:
+  title: Wedding Invitation Platform API
+  description: API for managing digital wedding invitations, RSVP tracking, and administrative tasks.
+  version: 1.1.0
+servers:
+  - url: https://card-go.asia/api
+    description: Production server
+  - url: http://localhost:3008/api
+    description: Local development server
+
+paths:
+  /invitations:
+    post:
+      summary: Create a new invitation (Integration API)
+      tags:
+        - Public
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phoneNumber
+                - groomName
+                - brideName
+                - eventDate
+                - eventLocation
+                - lang
+              properties:
+                phoneNumber:
+                  type: string
+                  example: "+77012223344"
+                groomName:
+                  type: string
+                  example: "Arman"
+                brideName:
+                  type: string
+                  example: "Aruzhan"
+                eventDate:
+                  type: string
+                  format: date-time
+                  example: "2026-06-15T18:00:00"
+                eventLocation:
+                  type: string
+                  example: "Royal Restaurant, Almaty"
+                lang:
+                  type: string
+                  enum: [ru, kk, en]
+                  example: "ru"
+                templateCode:
+                  type: string
+                  example: "deep_starry_night"
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                  shortUrl:
+                    type: string
+        '403':
+          description: Forbidden
+
+  /invitations/{uuid}:
+    get:
+      summary: Get invitation data
+      tags:
+        - Public
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invitation'
+
+  /rsvp/{uuid}:
+    post:
+      summary: Submit RSVP response
+      tags:
+        - Public
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - guestName
+                - attendance
+              properties:
+                guestName:
+                  type: string
+                attendance:
+                  type: string
+                  enum: [yes, no]
+                guestCount:
+                  type: integer
+                  default: 1
+      responses:
+        '200':
+          description: Saved
+
+  /admin/login:
+    post:
+      summary: Administrator Login
+      tags:
+        - Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Logged in successfully
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: admin_token=abc123xyz; HttpOnly; Secure
+
+  /admin/stats:
+    get:
+      summary: Get platform statistics
+      tags:
+        - Admin
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: Statistics object
+
+  /admin/invitations:
+    get:
+      summary: List invitations with RSVP stats
+      tags:
+        - Admin
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: Array of invitations
+
+  /admin/templates:
+    get:
+      summary: List available designs
+      tags:
+        - Admin
+      security:
+        - CookieAuth: []
+      responses:
+        '200':
+          description: Array of templates
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+    CookieAuth:
+      type: apiKey
+      in: cookie
+      name: admin_token
+
+  schemas:
+    Invitation:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+        phoneNumber:
+          type: string
+        groomName:
+          type: string
+        brideName:
+          type: string
+        eventDate:
+          type: string
+        eventLocation:
+          type: string
+        lang:
+          type: string
+        templateCode:
+          type: string

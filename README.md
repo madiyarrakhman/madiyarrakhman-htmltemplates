@@ -26,12 +26,12 @@ This platform allows for the generation of personalized wedding invitations with
 
 ## 🏗️ Technical Stack
 
-- **Frontend**: Vanilla HTML5, CSS3 (Advanced animations), JavaScript.
-- **Backend**: Node.js, TypeScript (Strict Mode).
+- **Frontend**: Vue 3, Vite, TypeScript, Pinia, Vue Router, Vue I18n.
+- **Backend**: Node.js, TypeScript (Strict Mode), Express.
 - **Architecture**: DDD (Domain-Driven Design), Layered Architecture (Domain, Application, Infrastructure).
 - **Database**: PostgreSQL (Migrations included).
-- **Testing**: Jest (Unit & Integration tests). TDD principles applied.
-- **Security**: JWT, Helmet.js, Rate Limiting, XSS Sanitization, HttpOnly Cookies.
+- **Testing**: Vitest (Frontend), Jest (Backend). 
+- **Security**: JWT, Helmet.js, Rate Limiting, HttpOnly Cookies, API Key.
 
 ## 📦 Project Structure
 
@@ -42,12 +42,15 @@ This platform allows for the generation of personalized wedding invitations with
 │   │   ├── domain/       # Domain Layer (Models & Interfaces)
 │   │   ├── application/  # Application Layer (Use Cases)
 │   │   └── infrastructure/ # Infrastructure Layer (API, DB, Libs)
-│   ├── dist/             # Compiled JS (Generated)
 │   └── package.json      # Backend Config
-├── admin.html            # Admin Dashboard UI
-├── landing.html          # Main landing page
-├── wedding-silk-ivory.html # Invitation Template
-└── migrations/           # SQL Migration files
+├── frontend/             # Vue 3 TypeScript SPA
+│   ├── src/              # Vue source files
+│   │   ├── components/   # UI components
+│   │   ├── views/        # Pages
+│   │   └── locales/      # i18n JSONs
+│   └── package.json      # Frontend Config
+├── migrations/           # SQL Migration files
+└── documentation/        # Documentation & Swagger
 ```
 
 ## 🛠️ Installation
@@ -71,10 +74,10 @@ This platform allows for the generation of personalized wedding invitations with
    ```
 5. **Build & Launch**:
    ```bash
-   npm run build  # Compile TypeScript
-   npm start      # Starts on http://localhost:3000
+   npm run build:all # Builds both frontend and backend
+   npm start         # Starts server on http://localhost:3000
    ```
-   *For development:* `npm run dev` (hot-reload with `ts-node`).
+   *For development:* Run `npm run dev` in root or separately in `api/` and `frontend/`.
 
 ## 🔐 Security & Testing
 
@@ -84,9 +87,9 @@ This platform allows for the generation of personalized wedding invitations with
 
 ## 📖 Detailed Guides
 
-- [Platform User Guide](PLATFORM_GUIDE.md)
-- [API Documentation](api/README.md)
-- [Deployment Checklist](DEPLOYMENT_CHECKLIST.md)
+- [Platform User Guide](documentation/PLATFORM_GUIDE.md)
+- [API Swagger Documentation](documentation/swagger.yaml)
+- [Deployment Checklist](documentation/DEPLOYMENT_CHECKLIST.md)
 
 ## 📄 License
 MIT License.
