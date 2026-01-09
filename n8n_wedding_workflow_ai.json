@@ -1,0 +1,157 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "whatsapp-incoming",
+                "options": {}
+            },
+            "id": "webhook-node",
+            "name": "WhatsApp Trigger",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                0,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "options": {
+                    "systemMessage": "Ты — свадебный помощник. Извлеки JSON из сообщения: groomName (имя жениха), brideName (имя невесты), date (дата), location (место). Текст сообщения: {{ $json.body.entry[0].changes[0].value.messages[0].text.body }}"
+                }
+            },
+            "id": "ai-agent-node",
+            "name": "AI Data Extractor",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1.1,
+            "position": [
+                250,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://htmltemplates-fi9mn.ondigitalocean.app/api/invitations",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "x-api-key",
+                            "value": "ВАШ_PRIVATE_API_KEY"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "phoneNumber",
+                            "value": "={{ $node[\"WhatsApp Trigger\"].json.body.entry[0].changes[0].value.messages[0].from }}"
+                        },
+                        {
+                            "name": "content",
+                            "value": "={{ JSON.parse($json.output) }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "http-api-node",
+            "name": "Create Wedding Link",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                500,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "phoneNumberId": "ВАШ_WHATSAPP_PHONE_NUMBER_ID",
+                "recipientPhoneNumber": "={{ $node[\"WhatsApp Trigger\"].json.body.entry[0].changes[0].value.messages[0].from }}",
+                "messageType": "text",
+                "textMessage": "Ваше приглашение готово! Ссылка: {{ $json.fullUrl }}",
+                "additionalFields": {}
+            },
+            "id": "whatsapp-node",
+            "name": "WhatsApp Send",
+            "type": "n8n-nodes-base.whatsApp",
+            "typeVersion": 1,
+            "position": [
+                750,
+                400
+            ],
+            "credentials": {
+                "whatsAppApi": {
+                    "id": "ВАШИ_WHATSAPP_CREDENTIALS_ID"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "model": "gpt-4o-mini"
+            },
+            "id": "openai-node",
+            "name": "OpenAI Chat Model",
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1,
+            "position": [
+                220,
+                600
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "ВАШИ_OPENAI_CREDENTIALS_ID"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "WhatsApp Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "AI Data Extractor",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "AI Data Extractor": {
+            "main": [
+                [
+                    {
+                        "node": "Create Wedding Link",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Create Wedding Link": {
+            "main": [
+                [
+                    {
+                        "node": "WhatsApp Send",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "OpenAI Chat Model": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "AI Data Extractor",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

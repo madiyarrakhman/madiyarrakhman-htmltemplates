@@ -1,0 +1,222 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "whatsapp-incoming",
+                "options": {}
+            },
+            "id": "webhook-trig",
+            "name": "WhatsApp Trigger",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                0,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "model": "gpt-4o-mini",
+                "options": {
+                    "temperature": 0
+                }
+            },
+            "id": "model-node",
+            "name": "OpenAI Chat Model",
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1,
+            "position": [
+                220,
+                600
+            ],
+            "credentials": {
+                "openAiApi": {
+                    "id": "ВАШ_OPENAI_ID"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "promptType": "define",
+                "text": "={{ $json.body.entry[0].changes[0].value.messages[0].text.body }}",
+                "options": {
+                    "systemMessage": "Проанализируй текст. Если в нем есть имена жениха, невесты и дата - извлеки их в JSON. Если данных нет или это просто приветствие, верни JSON: {\"missing\": true}. \n\nФормат для данных:\n{\n  \"groomName\": \"...\",\n  \"brideName\": \"...\",\n  \"date\": \"...\",\n  \"location\": \"...\"\n}"
+                }
+            },
+            "id": "ai-extractor",
+            "name": "AI Data Extractor",
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 1.1,
+            "position": [
+                250,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "conditions": {
+                    "boolean": [
+                        {
+                            "value1": "={{ JSON.parse($json.output).missing }}",
+                            "value2": true
+                        }
+                    ]
+                }
+            },
+            "id": "switch-node",
+            "name": "Check Data",
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 1,
+            "position": [
+                500,
+                400
+            ]
+        },
+        {
+            "parameters": {
+                "phoneNumberId": "ВАШ_PHONE_ID",
+                "recipientPhoneNumber": "={{ $node[\"WhatsApp Trigger\"].json.body.entry[0].changes[0].value.messages[0].from }}",
+                "messageType": "text",
+                "textMessage": "👋 Привет! Чтобы я создал свадебное приглашение, пожалуйста, пришлите данные в таком формате:\n\n1. Имя жениха: ...\n2. Имя невесты: ...\n3. Дата и время: ...\n4. Место проведения: ...\n\nПросто скопируйте, заполните и отправьте мне!",
+                "options": {}
+            },
+            "id": "send-help",
+            "name": "Send Format Template",
+            "type": "n8n-nodes-base.whatsApp",
+            "typeVersion": 1,
+            "position": [
+                750,
+                280
+            ],
+            "credentials": {
+                "whatsAppApi": {
+                    "id": "ВАШ_WA_CREDENTIALS_ID"
+                }
+            }
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://htmltemplates-fi9mn.ondigitalocean.app/api/invitations",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "x-api-key",
+                            "value": "ВАШ_PRIVATE_API_KEY"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "phoneNumber",
+                            "value": "={{ $node[\"WhatsApp Trigger\"].json.body.entry[0].changes[0].value.messages[0].from }}"
+                        },
+                        {
+                            "name": "content",
+                            "value": "={{ JSON.parse($node[\"AI Data Extractor\"].json.output) }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "api-call",
+            "name": "Create Invitation",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                750,
+                520
+            ]
+        },
+        {
+            "parameters": {
+                "phoneNumberId": "ВАШ_PHONE_ID",
+                "recipientPhoneNumber": "={{ $node[\"WhatsApp Trigger\"].json.body.entry[0].changes[0].value.messages[0].from }}",
+                "messageType": "text",
+                "textMessage": "🎊 Ваше приглашение готово! \n\nСсылка: {{ $json.fullUrl }}\n\nВы можете отправить эту ссылку своим гостям.",
+                "options": {}
+            },
+            "id": "send-link",
+            "name": "Send Link to User",
+            "type": "n8n-nodes-base.whatsApp",
+            "typeVersion": 1,
+            "position": [
+                1000,
+                520
+            ],
+            "credentials": {
+                "whatsAppApi": {
+                    "id": "ВАШ_WA_CREDENTIALS_ID"
+                }
+            }
+        }
+    ],
+    "connections": {
+        "WhatsApp Trigger": {
+            "main": [
+                [
+                    {
+                        "node": "ai-extractor",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "model-node": {
+            "ai_languageModel": [
+                [
+                    {
+                        "node": "ai-extractor",
+                        "type": "ai_languageModel",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "ai-extractor": {
+            "main": [
+                [
+                    {
+                        "node": "switch-node",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "switch-node": {
+            "main": [
+                [
+                    {
+                        "node": "send-help",
+                        "type": "main",
+                        "index": 0
+                    }
+                ],
+                [
+                    {
+                        "node": "api-call",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "api-call": {
+            "main": [
+                [
+                    {
+                        "node": "send-link",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}

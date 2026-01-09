@@ -1,0 +1,195 @@
+openapi: 3.0.0
+info:
+  title: Wedding Invitation Platform API
+  description: API for managing wedding invitations, RSVP responses, and analytics. Supports both Administrative access and Public/n8n integrations.
+  version: 1.0.5
+servers:
+  - url: /api
+    description: Current Server
+paths:
+  /admin/login:
+    post:
+      summary: Admin Login
+      tags:
+        - Admin Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: admin
+                password:
+                  type: string
+                  example: admin123
+      responses:
+        '200':
+          description: Successful login, sets HttpOnly cookie 'admin_token'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  token:
+                    type: string
+        '401':
+          description: Invalid credentials
+  /admin/logout:
+    post:
+      summary: Admin Logout
+      tags:
+        - Admin Auth
+      responses:
+        '200':
+          description: Clears admin_token cookie
+  /admin/invitations:
+    get:
+      summary: Get all invitations with stats
+      tags:
+        - Admin Dash
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of invitations
+    post:
+      summary: Create an invitation
+      tags:
+        - Admin Dash
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationCreate'
+      responses:
+        '201':
+          description: Invitation created
+  /admin/stats:
+    get:
+      summary: Get platform wide stats
+      tags:
+        - Admin Dash
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Stats object
+  /invitations:
+    post:
+      summary: Create invitation via API Key (for n8n/Integrations)
+      tags:
+        - Public API
+      security:
+        - apiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvitationCreate'
+      responses:
+        '201':
+          description: Invitation created with fullUrl
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  invitation:
+                    type: object
+                  fullUrl:
+                    type: string
+                    example: https://domain.app/i/uuid
+  /invitations/{uuid}:
+    get:
+      summary: Get invitation data
+      tags:
+        - Public API
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Invitation data
+        '404':
+          description: Not found
+  /rsvp/{uuid}:
+    post:
+      summary: Submit RSVP response
+      tags:
+        - Public API
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                guestName:
+                  type: string
+                attendance:
+                  type: string
+                  enum: [yes, no]
+                guestCount:
+                  type: integer
+                  minimum: 0
+      responses:
+        '200':
+          description: RSVP saved
+  /health:
+    get:
+      summary: Health check
+      tags:
+        - System
+      responses:
+        '200':
+          description: Server is up
+components:
+  schemas:
+    InvitationCreate:
+      type: object
+      required:
+        - phoneNumber
+        - content
+      properties:
+        phoneNumber:
+          type: string
+        templateCode:
+          type: string
+          default: starry-night
+        lang:
+          type: string
+          default: ru
+        content:
+          type: object
+          description: Flexible JSON object containing bridesmaid names, groom names, date, location, etc.
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: admin_token
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key

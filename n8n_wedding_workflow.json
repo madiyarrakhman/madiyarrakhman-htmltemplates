@@ -1,0 +1,97 @@
+{
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "wedding-invite",
+                "options": {}
+            },
+            "id": "1e9d9e9e-9e9e-4e9e-ae9e-9e9e9e9e9e9e",
+            "name": "Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 1,
+            "position": [
+                240,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "method": "POST",
+                "url": "https://htmltemplates-fi9mn.ondigitalocean.app/api/invitations",
+                "sendHeaders": true,
+                "headerParameters": {
+                    "parameters": [
+                        {
+                            "name": "x-api-key",
+                            "value": "ВАШ_PRIVATE_API_KEY_ИЗ_DIGITALOCEAN"
+                        }
+                    ]
+                },
+                "sendBody": true,
+                "bodyParameters": {
+                    "parameters": [
+                        {
+                            "name": "phoneNumber",
+                            "value": "={{ $node[\"Webhook\"].json[\"body\"][\"phone\"] }}"
+                        },
+                        {
+                            "name": "lang",
+                            "value": "ru"
+                        },
+                        {
+                            "name": "content",
+                            "value": "={{ { \"groomName\": $node[\"Webhook\"].json[\"body\"][\"groom\"], \"brideName\": $node[\"Webhook\"].json[\"body\"][\"bride\"], \"date\": $node[\"Webhook\"].json[\"body\"][\"date\"], \"location\": $node[\"Webhook\"].json[\"body\"][\"location\"] } }}"
+                        }
+                    ]
+                },
+                "options": {}
+            },
+            "id": "2e9d9e9e-9e9e-4e9e-ae9e-9e9e9e9e9e9e",
+            "name": "Create Invitation API",
+            "type": "n8n-nodes-base.httpRequest",
+            "typeVersion": 4.1,
+            "position": [
+                500,
+                300
+            ]
+        },
+        {
+            "parameters": {
+                "options": {}
+            },
+            "id": "3e9d9e9e-9e9e-4e9e-ae9e-9e9e9e9e9e9e",
+            "name": "Respond to User",
+            "type": "n8n-nodes-base.respondToWebApplication",
+            "typeVersion": 1,
+            "position": [
+                760,
+                300
+            ]
+        }
+    ],
+    "connections": {
+        "Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "Create Invitation API",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        },
+        "Create Invitation API": {
+            "main": [
+                [
+                    {
+                        "node": "Respond to User",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    }
+}
