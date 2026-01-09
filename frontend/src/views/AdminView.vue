@@ -170,9 +170,13 @@ onMounted(() => {
                     <button class="btn btn-primary" @click="showModal">+ Создать приглашение</button>
                 </div>
 
+                <div v-if="error" class="error-banner">
+                    {{ error }}
+                </div>
+
                 <div v-if="isLoading" style="text-align: center; padding: 2rem;">Загрузка...</div>
                 
-                <table v-else>
+                <table v-else-if="invitations.length > 0">
                     <thead>
                         <tr>
                             <th>Телефон</th>
@@ -197,6 +201,9 @@ onMounted(() => {
                         </tr>
                     </tbody>
                 </table>
+                <div v-else style="text-align: center; padding: 2rem; color: #666;">
+                    Список приглашений пуст
+                </div>
             </div>
         </div>
 
@@ -439,5 +446,15 @@ input, select {
 
 .flex-1 {
     flex: 1;
+}
+
+.error-banner {
+    background: #ffebee;
+    color: #c62828;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    text-align: center;
+    font-weight: 600;
 }
 </style>

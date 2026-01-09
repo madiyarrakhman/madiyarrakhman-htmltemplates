@@ -12,12 +12,11 @@ export class PostgresAdminRepository implements IAdminRepository {
                      WHEN i.lang = 'en' THEN t.name_en
                      ELSE t.name_ru 
                    END as template_name,
-                   COUNT(r.id)::int as rsvp_count,
-                   SUM(CASE WHEN r.attendance = 'yes' THEN r.guest_count ELSE 0 END)::int as approved_guests
+                   (SELECT COUNT(*)::int FROM rsvp_responses r WHERE r.invitation_uuid = i.uuid) as rsvp_count,
+                   (SELECT COALESCE(SUM(guest_count), 0)::int FROM rsvp_responses r 
+                    WHERE r.invitation_uuid = i.uuid AND r.attendance = 'yes') as approved_guests
             FROM invitations i
             LEFT JOIN templates t ON i.template_code = t.code
-            LEFT JOIN rsvp_responses r ON i.uuid = r.invitation_uuid
-            GROUP BY i.id, t.name_ru, t.name_kk, t.name_en
             ORDER BY i.created_at DESC
         `);
 
