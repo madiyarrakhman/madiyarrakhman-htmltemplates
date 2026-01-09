@@ -89,7 +89,12 @@ func main() {
 		rootDir = filepath.Join("..", "frontend", "dist")
 	}
 
-	r := api.SetupRouter(invHandler, adminHandler, jwtSecret, rootDir)
+	apiKey := os.Getenv("PRIVATE_API_KEY")
+	if apiKey == "" {
+		apiKey = "dev-api-key"
+	}
+
+	r := api.SetupRouter(invHandler, adminHandler, jwtSecret, apiKey, rootDir)
 
 	port := os.Getenv("PORT")
 	if port == "" {

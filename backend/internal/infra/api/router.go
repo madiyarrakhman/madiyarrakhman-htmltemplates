@@ -9,7 +9,7 @@ import (
 	"github.com/madiyarrakhman/wedding-invitation/backend/internal/infra/api/middleware"
 )
 
-func SetupRouter(invHandler *handlers.InvitationHandler, adminHandler *handlers.AdminHandler, jwtSecret []byte, frontendDist string) *gin.Engine {
+func SetupRouter(invHandler *handlers.InvitationHandler, adminHandler *handlers.AdminHandler, jwtSecret []byte, apiKey string, frontendDist string) *gin.Engine {
 	r := gin.Default()
 
 	api := r.Group("/api")
@@ -25,7 +25,7 @@ func SetupRouter(invHandler *handlers.InvitationHandler, adminHandler *handlers.
 		api.POST("/admin/logout", adminHandler.Logout)
 
 		admin := api.Group("/admin")
-		admin.Use(middleware.AuthMiddleware(jwtSecret))
+		admin.Use(middleware.AuthMiddleware(jwtSecret, apiKey))
 		{
 			admin.GET("/stats", adminHandler.GetStats)
 			admin.GET("/invitations", adminHandler.GetInvitationsList)

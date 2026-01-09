@@ -32,7 +32,7 @@ func setupTestRouter() (*gin.Engine, *mocks.MockInvitationRepository, *mocks.Moc
 	invHandler := handlers.NewInvitationHandler(invUC)
 	adminHandler := handlers.NewAdminHandler(adminUC, invUC)
 
-	r := api.SetupRouter(invHandler, adminHandler, jwtSecret, "dist")
+	r := api.SetupRouter(invHandler, adminHandler, jwtSecret, "test-api-key", "dist")
 	return r, invRepo, adminRepo
 }
 

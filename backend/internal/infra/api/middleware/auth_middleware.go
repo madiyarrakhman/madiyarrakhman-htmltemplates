@@ -7,11 +7,11 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func AuthMiddleware(secret []byte) gin.HandlerFunc {
+func AuthMiddleware(secret []byte, apiKey string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Check for API Key first (for external tools like n8n)
-		apiKey := c.GetHeader("x-api-key")
-		if apiKey == "YOUR_SECURE_API_KEY_CHANGE_ME" { // TODO: Move to config
+		reqApiKey := c.GetHeader("x-api-key")
+		if reqApiKey != "" && reqApiKey == apiKey {
 			c.Next()
 			return
 		}
