@@ -4,8 +4,8 @@
     "description": "Full stack wedding invitation app",
     "main": "api/dist/server.js",
     "scripts": {
-        "start": "cd backend && go run main.go",
-        "dev": "cd backend && go run main.go",
+        "start": "cd backend && go run cmd/server/main.go",
+        "dev": "cd backend && go run cmd/server/main.go",
         "build:frontend": "cd frontend && npm install && npm run build",
         "build": "npm run build:frontend",
         "test": "npm test --prefix api_backup && npm test --prefix frontend -- --run",

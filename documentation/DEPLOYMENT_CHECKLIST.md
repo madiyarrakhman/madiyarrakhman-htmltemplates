@@ -1,97 +1,43 @@
-# Quick Deployment Checklist
+# Quick Deployment Checklist (Go + Vue)
 
 ## Before Deployment
 
-- [ ] Generate API keys: `cd api && node generate-keys.js`
-- [ ] Save both keys somewhere safe (password manager)
+- [ ] Ensure all Go unit tests pass: `cd backend && go test ./...`
+- [ ] Ensure Vue frontend builds: `cd frontend && npm run build`
 - [ ] Push code to GitHub: `git push`
 
-## DigitalOcean Setup
+## DigitalOcean App Platform (Recommended)
 
 ### 1. Create App
 - [ ] Go to https://cloud.digitalocean.com/apps
 - [ ] Click "Create App"
 - [ ] Select your GitHub repo
-- [ ] Click "Next"
+- [ ] **Docker Detection**: DigitalOcean should automatically detect the `Dockerfile` in the root.
+- [ ] Set **HTTP Port** to `3008`.
 
 ### 2. Add Secrets (CRITICAL!)
 
-Добавьте в **App-Level Environment Variables**:
+Add to **App-Level Environment Variables**:
 
-- [ ] `PUBLIC_API_KEY` (value: `pk_...`)
-  - ✅ Check "Encrypt"
-  
-- [ ] `PRIVATE_API_KEY` (value: `sk_...`)
-  - ✅ Check "Encrypt"
-  
-- [ ] `FRONTEND_PUBLIC_KEY` (value: `pk_...`) ← Тот же ключ!
-  - ✅ Check "Encrypt"
+- [ ] `DATABASE_URL` (usually provided by DO database resource)
+- [ ] `JWT_SECRET` (generate a long random string)
+- [ ] `ADMIN_USERNAME` (e.g., admin)
+- [ ] `ADMIN_PASSWORD` (e.g., your-secure-password)
+- [ ] `PRIVATE_API_KEY` (for n8n/Zapier integrations)
 
-⚠️ **Важно:** `FRONTEND_PUBLIC_KEY` должен быть таким же, как `PUBLIC_API_KEY`!
+### 3. CI/CD with GitHub Actions
 
-### 3. Launch
-- [ ] Review settings
-- [ ] Click "Create Resources"
-- [ ] Wait 3-5 minutes
+The provided `.github/workflows/main.yml` automatically:
+1. Runs Go tests.
+2. Builds the Vue frontend.
+3. Verifies that the Docker image builds successfully.
 
-### 4. Test
-- [ ] Visit your app URL
-- [ ] Try submitting RSVP form
-- [ ] Check if data saves to database
-
-## Your Keys
-
-**Public Key (для API и Frontend):**
-```
-pk_e794970a30ba3e1a14a1a72c8bc16be913094a3cc87c2bfa91fc6436b95d661a
-```
-
-**Private Key (только для API):**
-```
-sk_fbc7ee7607d57456f78dc6c5c404f58e2cd6fe7834b03b8332ad6b5237a358ea
-```
-
-⚠️ **Keep private key secret!**
-
-### Что добавить в DigitalOcean:
-
-В **App-Level Environment Variables** добавьте **3 переменные**:
-
-1. `PUBLIC_API_KEY` = `pk_e794970a30ba3e1a14a1a72c8bc16be913094a3cc87c2bfa91fc6436b95d661a`
-2. `PRIVATE_API_KEY` = `sk_fbc7ee7607d57456f78dc6c5c404f58e2cd6fe7834b03b8332ad6b5237a358ea`
-3. `FRONTEND_PUBLIC_KEY` = `pk_e794970a30ba3e1a14a1a72c8bc16be913094a3cc87c2bfa91fc6436b95d661a` (тот же что и PUBLIC_API_KEY)
-
-Все три с галочкой ✅ Encrypt
-
-## Testing Admin Endpoints
-
-After deployment, test with your private key:
-
-```bash
-# Get all RSVPs
-curl https://your-app.ondigitalocean.app/api/rsvp \
-  -H "X-API-Key: sk_fbc7ee7607d57456f78dc6c5c404f58e2cd6fe7834b03b8332ad6b5237a358ea"
-
-# Get statistics
-curl https://your-app.ondigitalocean.app/api/rsvp/stats \
-  -H "X-API-Key: sk_fbc7ee7607d57456f78dc6c5c404f58e2cd6fe7834b03b8332ad6b5237a358ea"
-```
+To enable **Auto-Deployment** to DigitalOcean via GitHub Actions:
+1. Uncomment the deploy section in `main.yml`.
+2. Add `DIGITALOCEAN_ACCESS_TOKEN` to your GitHub Repo Secrets.
 
 ## Troubleshooting
 
-**Form not submitting?**
-- Check build logs for `config.js generated` message
-- Verify PUBLIC_API_KEY is set in frontend secrets
-
-**API errors?**
-- Check API logs: `doctl apps logs YOUR_APP_ID`
-- Verify both keys are set in API secrets
-- Make sure "Encrypt" is checked
-
-**Database errors?**
-- DATABASE_URL should be auto-set
-- Check if PostgreSQL database is created
-
-## Need Help?
-
-See detailed guide: [DIGITALOCEAN_DEPLOYMENT.md](DIGITALOCEAN_DEPLOYMENT.md)
+- **Logs**: Use `doctl apps logs <app-id>` to see Go backend output.
+- **Port**: Ensure the app is listening on `0.0.0.0:3008` (handled by Dockerfile).
+- **Environment**: If `FRONTEND_DIST` is not set, it defaults to `./frontend/dist`.
