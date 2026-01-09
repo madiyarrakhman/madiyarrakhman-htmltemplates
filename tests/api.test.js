@@ -53,8 +53,12 @@ describe('Wedding Platform Full Integration Tests', () => {
         });
 
         it('should login successfully and return a cookie', async () => {
-            const adminUser = process.env.ADMIN_USERNAME || 'admin';
-            const adminPass = process.env.ADMIN_PASSWORD || 'admin123';
+            const adminUser = process.env.ADMIN_USERNAME;
+            const adminPass = process.env.ADMIN_PASSWORD;
+
+            if (!adminUser || !adminPass) {
+                throw new Error('ADMIN_USERNAME and ADMIN_PASSWORD must be set for tests');
+            }
 
             const res = await request(app)
                 .post('/api/admin/login')
