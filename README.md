@@ -82,8 +82,8 @@ This platform allows for the generation of personalized wedding invitations with
 ## 🔐 Security & Testing
 
 - Run `node api/generate-keys.js` to generate secure keys.
-- Refer to `TESTING_CHECKLIST.md` before any production deployment.
-- Check `SECURITY.md` for security protocols.
+- Refer to [documentation/TESTING_CHECKLIST.md](documentation/TESTING_CHECKLIST.md) before any production deployment.
+- Check [documentation/SECURITY.md](documentation/SECURITY.md) for security protocols.
 
 ## 📖 Detailed Guides
 
