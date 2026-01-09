@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { format } from 'date-fns'
 import { ru, enUS } from 'date-fns/locale'
@@ -61,6 +61,27 @@ const submitRsvp = async () => {
         isSubmitting.value = false
     }
 }
+
+// Scroll animations
+onMounted(() => {
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -100px 0px'
+    }
+    
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible')
+            }
+        })
+    }, observerOptions)
+    
+    // Observe all fade-in-scroll elements
+    document.querySelectorAll('.fade-in-scroll').forEach(el => {
+        observer.observe(el)
+    })
+})
 </script>
 
 <template>

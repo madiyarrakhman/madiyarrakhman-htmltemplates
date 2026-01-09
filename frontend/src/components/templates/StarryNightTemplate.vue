@@ -214,6 +214,7 @@ const submitRsvp = async () => {
   </div>
 </template>
 
+<style scoped>
 /* ==================== */
 /* Hero Section */
 /* ==================== */
@@ -777,3 +778,4 @@ section {
         padding: var(--spacing-lg) var(--spacing-sm);
     }
 }
+</style>
