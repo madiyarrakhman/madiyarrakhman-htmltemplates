@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VibeInvite — Умные цифровые пригласительные на вашу свадьбу</title>
+    <meta name="description"
+        content="Создайте элегантное цифровое приглашение за 2 минуты через WhatsApp. Персонализированные ссылки, RSVP-трекинг и премиальный дизайн.">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Playfair+Display:wght@700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        :root {
+            --color-brand: #c5a059;
+            --color-brand-dark: #a88948;
+            --color-bg: #fdfcf9;
+            --color-text: #1a1a1a;
+            --color-text-muted: #666666;
+            --container-width: 1100px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* --- Navigation --- */
+        nav {
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: var(--container-width);
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--color-brand);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            padding: 8rem 5% 4rem;
+            text-align: center;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 8vw, 4.5rem);
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            color: var(--color-text-muted);
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 1.2rem 2.5rem;
+            background-color: var(--color-brand);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: var(--transition);
+            box-shadow: 0 10px 30px rgba(197, 160, 89, 0.3);
+            gap: 0.8rem;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            background-color: var(--color-brand-dark);
+            box-shadow: 0 15px 40px rgba(197, 160, 89, 0.4);
+        }
+
+        .whatsapp-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* --- Features Section --- */
+        .features {
+            padding: 6rem 5%;
+            max-width: var(--container-width);
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+        }
+
+        .feature-card {
+            padding: 2.5rem;
+            background: white;
+            border-radius: 24px;
+            border: 1px solid rgba(0, 0, 0, 0.03);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.02);
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+        }
+
+        .icon-circle {
+            width: 60px;
+            height: 60px;
+            background: #fff9ed;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .feature-card p {
+            color: var(--color-text-muted);
+            font-size: 1rem;
+        }
+
+        /* --- Steps Section --- */
+        .steps {
+            background-color: white;
+            padding: 8rem 5%;
+        }
+
+        .section-header {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 5rem;
+        }
+
+        .section-header h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .steps-container {
+            max-width: var(--container-width);
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
+        }
+
+        .step-row {
+            display: flex;
+            align-items: center;
+            gap: 4rem;
+        }
+
+        .step-row:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-num {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--color-brand);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        .step-content h3 {
+            font-size: 2rem;
+            margin-bottom: 1.5rem;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .step-image {
+            flex: 1;
+            background: var(--color-bg);
+            border-radius: 30px;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.02);
+        }
+
+        /* --- Footer --- */
+        footer {
+            padding: 4rem 5%;
+            text-align: center;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .footer-logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--color-brand);
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .copyright {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* --- Floating UI Element for Demo --- */
+        .mockup-phone {
+            width: 200px;
+            height: 400px;
+            background: #fff;
+            border: 8px solid #1a1a1a;
+            border-radius: 30px;
+            padding: 10px;
+            position: relative;
+        }
+
+        .chat-bubble {
+            background: #e1f5fe;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            max-width: 80%;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .chat-bubble.me {
+            background: #dcf8c6;
+            margin-left: auto;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+
+            .step-row,
+            .step-row:nth-child(even) {
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .hero {
+                padding: 4rem 5%;
+            }
+
+            .hero h1 {
+                font-size: 2.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <a href="/" class="logo">VibeInvite</a>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <h1>Создайте цифровое приглашение за 2 минуты</h1>
+            <p>Забудьте о бумажной рассылке. Просто напишите нашему боту в WhatsApp, и получите стильную страницу вашего
+                торжества с RSVP-трекингом.</p>
+            <a href="https://wa.me/your_number_here" class="cta-button">
+                <svg class="whatsapp-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.284l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766 0-3.181-2.587-5.768-5.764-5.768zm3.393 8.3c-.146.405-.844.733-1.164.778-.287.041-.63.064-1.763-.406-1.456-.604-2.391-2.073-2.464-2.17-.073-.098-.593-.789-.593-1.57s.411-1.171.557-1.328c.146-.158.32-.198.426-.198.106 0 .211.002.304.006.098.004.23-.037.359.274.133.32.454 1.107.494 1.189.04.081.066.176.013.282-.053.107-.079.172-.158.264-.079.091-.166.204-.237.273-.081.079-.165.166-.071.328.095.161.42 1.002.901 1.433.621.556 1.141.729 1.306.811.166.081.264.068.362-.045.097-.113.424-.494.536-.66.113-.166.226-.139.381-.081s.988.466 1.157.551c.17.085.283.127.324.198.041.071.041.409-.105.814z" />
+                    <path
+                        d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12z" />
+                </svg>
+                Написать в WhatsApp
+            </a>
+        </section>
+
+        <section class="features">
+            <div class="feature-card">
+                <div class="icon-circle">💎</div>
+                <h3>Премиум Дизайн</h3>
+                <p>Ваше приглашение выглядит как дорогой сайт. Никаких шаблонов из прошлого века.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-circle">⚡️</div>
+                <h3>Быстро и просто</h3>
+                <p>Вам не нужно регистрироваться. Просто отправьте данные боту и ссылка готова.</p>
+            </div>
+            <div class="feature-card">
+                <div class="icon-circle">📊</div>
+                <h3>RSVP Умный учет</h3>
+                <p>Узнайте точное количество гостей и их пожелания в реальном времени.</p>
+            </div>
+        </section>
+
+        <section class="steps">
+            <div class="section-header">
+                <h2>Как это работает</h2>
+            </div>
+            <div class="steps-container">
+                <div class="step-row">
+                    <div class="step-content">
+                        <span class="step-num">Шаг 01</span>
+                        <h3>Напишите боту</h3>
+                        <p>Начните чат в WhatsApp. Бот задаст вам все необходимые вопросы: имена, дата, место и
+                            программа вечера.</p>
+                    </div>
+                    <div class="step-image">
+                        <div class="mockup-phone">
+                            <div class="chat-bubble">Привет! Я помогу создать ваше свадебное приглашение. Как зовут
+                                жениха?</div>
+                            <div class="chat-bubble me">Александр</div>
+                            <div class="chat-bubble">А невесту?</div>
+                            <div class="chat-bubble me">Екатерина</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="step-row">
+                    <div class="step-content">
+                        <span class="step-num">Шаг 02</span>
+                        <h3>Выберите дизайн</h3>
+                        <p>Бот предложит вам несколько вариантов оформления: от классического "Шёлка" до современной
+                            "Звездной ночи".</p>
+                    </div>
+                    <div class="step-image">
+                        <div style="font-size: 4rem; opacity: 0.2">✨ ⚜️ ✨</div>
+                    </div>
+                </div>
+                <div class="step-row">
+                    <div class="step-content">
+                        <span class="step-num">Шаг 03</span>
+                        <h3>Разошлите ссылку</h3>
+                        <p>Получите персональную короткую ссылку и отправьте её гостям. Они смогут подтвердить участие
+                            прямо на сайте.</p>
+                    </div>
+                    <div class="step-image">
+                        <div
+                            style="padding: 1rem; background: white; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.1)">
+                            vibeinvite.com/i/alex-kate
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <span class="footer-logo">VibeInvite</span>
+        <p class="copyright">© 2026 Все права защищены. Создано с любовью.</p>
+    </footer>
+
+</body>
+
+</html>

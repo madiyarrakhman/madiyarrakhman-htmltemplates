@@ -328,7 +328,7 @@ app.get('/i/:uuid', async (req, res) => {
     }
 });
 app.get('/template/silk-ivory', (req, res) => res.sendFile(path.join(__dirname, '../wedding-silk-ivory.html')));
-app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../wedding-invitation.html')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../landing.html')));
 app.get('*', (req, res) => res.status(404).sendFile(path.join(__dirname, '../404.html')));
 
 if (require.main === module) {
