@@ -93,18 +93,29 @@ function renderInvitation(data) {
     }
 
     // Location
-    if (location) setMultiText('.location-name', location);
-    if (address) setMultiText('.location-address', address);
+    const locName = data.event_location || data.content?.location;
+    const locAddress = data.content?.address || ''; // Address remains in flexible content or shared
+
+    if (locName) setMultiText('.location-name', locName);
+    if (locAddress) {
+        setMultiText('.location-address', locAddress);
+    } else if (locName && !data.content?.address) {
+        // If we only have event_location, maybe clear the address placeholder or use it if needed
+        setMultiText('.location-address', '');
+    }
+
     if (story) setMultiText('.story-text', story);
 
     // Map Coordinates (if provided)
-    if (content.coordinates) {
+    if (data.content?.coordinates) {
         // Update map link or iframe if you have one
     }
 
     // Hiding Sections
-    // Example: If user decided to hide RSVP form
-    // setDisplay('.rsvp-section', content.showRSVP !== false);
+    if (data.content?.showRSVP === false) {
+        const rsvpSec = document.querySelector('.rsvp-section');
+        if (rsvpSec) rsvpSec.style.display = 'none';
+    }
 }
 
 // Helper to set text for multiple elements with same class
