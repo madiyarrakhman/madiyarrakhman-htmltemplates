@@ -221,7 +221,7 @@ onMounted(() => {
         <!-- Footer -->
         <footer class="footer">
             <div class="footer-content">
-                <p class="footer-quote">"Любовь — это когда счастье другого человека важнее собственного"</p>
+                <p class="footer-quote">"{{ t('footer_quote') }}"</p>
                 <div class="footer-ornament">❦</div>
                 <p class="footer-names">
                     <span class="groom-name">{{ invitation.groomName }}</span> & <span class="bride-name">{{ invitation.brideName }}</span>
