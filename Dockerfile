@@ -7,15 +7,11 @@ COPY frontend/ .
 RUN npm run build
 
 # Build Stage 2: Go Backend
-FROM golang:1.23-alpine AS backend-builder
+FROM golang:1.24-alpine AS backend-builder
 WORKDIR /app/backend
-COPY backend/go.mod backend/go.sum ./
-RUN go mod download
 COPY backend/ .
-# Copy frontend dist to backend for embedding if needed, 
-# although our main.go serves it from ../frontend/dist by default.
-# For Docker, we'll put it in a specific place.
-RUN CGO_ENABLED=0 GOOS=linux go build -o main cmd/server/main.go
+# Use -mod=vendor to build using the vendored dependencies
+RUN CGO_ENABLED=0 GOOS=linux go build -mod=vendor -o main cmd/server/main.go
 
 # Build Stage 3: Final Image
 FROM alpine:latest
