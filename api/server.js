@@ -170,6 +170,16 @@ app.get('/api/admin/stats', authenticateAdmin, async (req, res) => {
     }
 });
 
+// Admin Get Templates
+app.get('/api/admin/templates', authenticateAdmin, async (req, res) => {
+    try {
+        const result = await pool.query('SELECT code, name FROM templates WHERE is_active = true');
+        res.json(result.rows);
+    } catch (error) {
+        res.status(500).json({ error: 'Database error' });
+    }
+});
+
 // Admin Create Invitation
 app.post('/api/admin/invitations', authenticateAdmin, async (req, res) => {
     let { phoneNumber, templateCode, lang, groomName, brideName, eventDate, eventLocation, content } = req.body;
@@ -297,7 +307,26 @@ app.get('/api/health', (req, res) => {
 // Frontend Routing
 app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, '../admin.html')));
 app.get('/admin/login', (req, res) => res.sendFile(path.join(__dirname, '../admin-login.html')));
-app.get('/i/:uuid', (req, res) => res.sendFile(path.join(__dirname, '../wedding-invitation.html')));
+app.get('/i/:uuid', async (req, res) => {
+    const { uuid } = req.params;
+    try {
+        const result = await pool.query('SELECT template_code FROM invitations WHERE uuid = $1', [uuid]);
+        if (result.rows.length === 0) {
+            return res.status(404).sendFile(path.join(__dirname, '../404.html'));
+        }
+
+        const template = result.rows[0].template_code;
+        let fileName = 'wedding-invitation.html'; // Default
+
+        if (template === 'silk-ivory') {
+            fileName = 'wedding-silk-ivory.html';
+        }
+
+        res.sendFile(path.join(__dirname, '../', fileName));
+    } catch (err) {
+        res.status(500).send('Internal Server Error');
+    }
+});
 app.get('/template/silk-ivory', (req, res) => res.sendFile(path.join(__dirname, '../wedding-silk-ivory.html')));
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../wedding-invitation.html')));
 app.get('*', (req, res) => res.status(404).sendFile(path.join(__dirname, '../404.html')));
