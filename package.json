@@ -5,7 +5,7 @@
     "main": "api/dist/server.js",
     "scripts": {
         "start": "npm start --prefix api",
-        "build": "npm run build --prefix api",
+        "build": "cd api && npm install && npm run build",
         "dev": "npm run dev --prefix api",
         "test": "npm test --prefix api",
         "migrate": "npm run migrate --prefix api",
