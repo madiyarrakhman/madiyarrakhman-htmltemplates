@@ -18,7 +18,10 @@ func NewPostgresInvitationRepository(pool *pgxpool.Pool) *PostgresInvitationRepo
 func (r *PostgresInvitationRepository) GetByUUID(uuid string) (*domain.Invitation, error) {
 	var inv domain.Invitation
 	err := r.pool.QueryRow(context.Background(),
-		`SELECT id, uuid, phone_number, template_code, lang, content, groom_name, bride_name, event_date, event_location, short_code 
+		`SELECT id, uuid, phone_number, template_code, lang, content, 
+		 COALESCE(groom_name, ''), COALESCE(bride_name, ''), 
+		 COALESCE(event_date, ''), COALESCE(event_location, ''), 
+		 COALESCE(short_code, '')
 		 FROM invitations WHERE uuid = $1`, uuid).Scan(
 		&inv.ID, &inv.UUID, &inv.PhoneNumber, &inv.TemplateCode, &inv.Lang, &inv.Content, &inv.GroomName, &inv.BrideName, &inv.EventDate, &inv.EventLocation, &inv.ShortCode)
 
@@ -72,7 +75,7 @@ func (r *PostgresAdminRepository) GetStats() (*domain.AdminStats, error) {
 func (r *PostgresAdminRepository) GetInvitationsList() ([]domain.InvitationWithStats, error) {
 	rows, err := r.pool.Query(context.Background(), `
 		SELECT 
-            i.uuid, i.phone_number, i.template_code, i.lang, i.short_code,
+            i.uuid, i.phone_number, i.template_code, i.lang, COALESCE(i.short_code, ''),
             COALESCE((SELECT COUNT(*) FROM rsvp_responses r WHERE r.invitation_uuid = i.uuid), 0) as rsvp_count,
             COALESCE((SELECT SUM(guest_count) FROM rsvp_responses r WHERE r.invitation_uuid = i.uuid AND r.attendance = 'yes'), 0) as approved_guests
         FROM invitations i
