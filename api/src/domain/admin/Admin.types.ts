@@ -15,6 +15,7 @@ export interface AdminInvitationListItemEntity {
     eventLocation: string;
     rsvpCount: number;
     approvedGuests: number;
+    shortCode?: string;
     createdAt: Date;
 }
 

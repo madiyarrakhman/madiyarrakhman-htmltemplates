@@ -26,6 +26,7 @@ export class PostgresAdminRepository implements IAdminRepository {
             eventLocation: row.event_location,
             rsvpCount: row.rsvp_count || 0,
             approvedGuests: row.approved_guests || 0,
+            shortCode: row.short_code,
             createdAt: new Date(row.created_at)
         }));
     }

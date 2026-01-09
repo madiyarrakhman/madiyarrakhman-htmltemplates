@@ -271,9 +271,9 @@
                 if (statsRes.status === 401) window.location.href = '/admin/login';
 
                 const stats = await statsRes.json();
-                document.getElementById('stat-total').innerText = stats.total_invitations;
-                document.getElementById('stat-rsvp').innerText = stats.total_rsvps;
-                document.getElementById('stat-guests').innerText = stats.total_guests || 0;
+                document.getElementById('stat-total').innerText = stats.totalInvitations;
+                document.getElementById('stat-rsvp').innerText = stats.totalRSVPs;
+                document.getElementById('stat-guests').innerText = stats.totalGuests || 0;
 
                 // Load templates
                 const templatesRes = await fetch('/api/admin/templates');
@@ -293,12 +293,13 @@
                 if (Array.isArray(invites)) {
                     tbody.innerHTML = invites.map(i => `
                         <tr>
-                            <td>${escapeHTML(i.phone_number)}</td>
+                            <td>${escapeHTML(i.phoneNumber)}</td>
                             <td><span class="badge">${escapeHTML(i.lang)}</span></td>
-                            <td>${i.rsvp_count}</td>
-                            <td>${i.approved_guests || 0}</td>
+                            <td>${i.rsvpCount}</td>
+                            <td>${i.approvedGuests || 0}</td>
                             <td>
-                                <span class="copy-link" onclick="copyLink('${i.short_code}', '${i.uuid}')">Копировать короткую ссылку</span>
+                                <a href="/i/${i.uuid}" target="_blank" style="margin-right: 1rem; color: var(--accent); text-decoration: none;">Открыть</a>
+                                <span class="copy-link" onclick="copyLink('${i.shortCode}', '${i.uuid}')">Копировать короткую ссылку</span>
                             </td>
                         </tr>
                     `).join('');
