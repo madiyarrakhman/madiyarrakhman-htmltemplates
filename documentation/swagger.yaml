@@ -170,6 +170,63 @@ paths:
       responses:
         '200':
           description: Array of invitations
+    post:
+      summary: Create a new invitation (Admin/API)
+      tags:
+        - Admin
+      security:
+        - ApiKeyAuth: []
+        - CookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - phoneNumber
+                - templateCode
+              properties:
+                phoneNumber:
+                  type: string
+                  example: "+77012223344"
+                templateCode:
+                  type: string
+                  example: "starry-night"
+                groomName:
+                  type: string
+                  example: "Arman"
+                brideName:
+                  type: string
+                  example: "Aia"
+                eventDate:
+                  type: string
+                  example: "2026-06-15"
+                eventLocation:
+                  type: string
+                  example: "Almaty"
+                lang:
+                  type: string
+                  enum: [ru, kk, en]
+                  default: "ru"
+                content:
+                  type: object
+                  description: Optional JSON content
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                  shortCode:
+                    type: string
+                  shortLink:
+                    type: string
+                    example: "https://card-go.asia/s/AbCd12"
 
   /admin/templates:
     get:

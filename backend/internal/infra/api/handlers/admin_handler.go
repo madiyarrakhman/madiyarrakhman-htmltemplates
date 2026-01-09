@@ -80,5 +80,9 @@ func (h *AdminHandler) CreateInvitation(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"uuid": inv.UUID, "shortCode": inv.ShortCode})
+	// Construct full short link
+	// Ideally, base URL is from config, but we can infer or hardcode based on domain.
+	// User domain is card-go.asia.
+	shortLink := "https://card-go.asia/s/" + inv.ShortCode
+	c.JSON(http.StatusCreated, gin.H{"uuid": inv.UUID, "shortCode": inv.ShortCode, "shortLink": shortLink})
 }
