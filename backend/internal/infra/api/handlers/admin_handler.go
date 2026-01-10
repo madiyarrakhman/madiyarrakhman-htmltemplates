@@ -86,3 +86,17 @@ func (h *AdminHandler) CreateInvitation(c *gin.Context) {
 	shortLink := "https://card-go.asia/s/" + inv.ShortCode
 	c.JSON(http.StatusCreated, gin.H{"uuid": inv.UUID, "shortCode": inv.ShortCode, "shortLink": shortLink})
 }
+
+func (h *AdminHandler) MarkAsPaid(c *gin.Context) {
+	uuid := c.Param("uuid")
+	if uuid == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "uuid is required"})
+		return
+	}
+
+	if err := h.useCase.MarkAsPaid(uuid); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"status": "ok"})
+}

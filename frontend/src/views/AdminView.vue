@@ -28,6 +28,8 @@ interface InvitationItem {
     rsvpCount: number
     approvedGuests: number
     shortCode?: string
+    isPaid: boolean
+    expiresAt: string
 }
 
 const stats = ref<Stats>({ totalInvitations: 0, totalRSVPs: 0, totalGuests: 0 })
@@ -138,6 +140,32 @@ const copyLink = (shortCode: string | undefined, uuid: string) => {
     alert('Ссылка скопирована: ' + url)
 }
 
+const markAsPaid = async (uuid: string) => {
+    if (!confirm('Пометить как оплаченное?')) return
+    try {
+        const res = await fetch(`/api/admin/invitations/${uuid}/pay`, { method: 'POST' })
+        if (res.ok) {
+            loadData()
+        } else {
+            alert('Ошибка при обновлении статуса')
+        }
+    } catch (e) {
+        alert('Ошибка сети')
+    }
+}
+
+const formatExp = (dateStr: string) => {
+    if (!dateStr) return '-'
+    const d = new Date(dateStr)
+    return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+}
+
+const getStatus = (item: InvitationItem) => {
+    if (item.isPaid) return { text: 'Оплачено', class: 'paid' }
+    if (new Date(item.expiresAt) < new Date()) return { text: 'Истекло', class: 'expired' }
+    return { text: 'Активно', class: 'active' }
+}
+
 onMounted(() => {
     loadData()
 })
@@ -186,6 +214,7 @@ onMounted(() => {
                             <th>{{ t('admin_col_lang') }}</th>
                             <th>{{ t('admin_col_rsvp') }}</th>
                             <th>{{ t('admin_col_guests') }}</th>
+                            <th>Статус / Срок</th>
                             <th>{{ t('admin_col_link') }}</th>
                         </tr>
                     </thead>
@@ -197,8 +226,17 @@ onMounted(() => {
                             <td>{{ invite.rsvpCount }}</td>
                             <td>{{ invite.approvedGuests }}</td>
                             <td>
-                                <router-link :to="'/i/' + invite.uuid" target="_blank" class="open-link">{{ t('admin_open_link') }}</router-link>
-                                <span class="copy-link" @click="copyLink(invite.shortCode, invite.uuid)">{{ t('admin_copy_link') }}</span>
+                                <div class="status-cell">
+                                    <span class="badge" :class="getStatus(invite).class">{{ getStatus(invite).text }}</span>
+                                    <small v-if="!invite.isPaid" class="exp-date">{{ formatExp(invite.expiresAt) }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="actions-cell">
+                                    <router-link :to="'/i/' + invite.uuid" target="_blank" class="open-link">{{ t('admin_open_link') }}</router-link>
+                                    <span class="copy-link" @click="copyLink(invite.shortCode, invite.uuid)">{{ t('admin_copy_link') }}</span>
+                                    <button v-if="!invite.isPaid" class="btn-pay" @click="markAsPaid(invite.uuid)">💸 Оплатить</button>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
@@ -448,6 +486,55 @@ input, select {
 
 .flex-1 {
     flex: 1;
+}
+
+.status-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.exp-date {
+    font-size: 0.7rem;
+    color: #999;
+}
+
+.badge.paid {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.badge.expired {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.badge.active {
+    background: #fff3e0;
+    color: #ef6c00;
+}
+
+.actions-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.btn-pay {
+    background: #1a1a1a;
+    color: #ffd700;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-pay:hover {
+    background: #000;
+    transform: scale(1.05);
 }
 
 .error-banner {

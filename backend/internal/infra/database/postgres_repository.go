@@ -16,36 +16,39 @@ func NewPostgresInvitationRepository(pool *pgxpool.Pool) *PostgresInvitationRepo
 }
 
 func (r *PostgresInvitationRepository) GetByUUID(uuid string) (*domain.Invitation, error) {
-	var inv domain.Invitation
-	err := r.pool.QueryRow(context.Background(),
-		`SELECT id, uuid, phone_number, template_code, lang, content, 
-		 COALESCE(groom_name, ''), COALESCE(bride_name, ''), 
-		 COALESCE(event_date, ''), COALESCE(event_location, ''), 
-		 COALESCE(short_code, '')
-		 FROM invitations WHERE uuid = $1`, uuid).Scan(
-		&inv.ID, &inv.UUID, &inv.PhoneNumber, &inv.TemplateCode, &inv.Lang, &inv.Content, &inv.GroomName, &inv.BrideName, &inv.EventDate, &inv.EventLocation, &inv.ShortCode)
-
+	var i domain.Invitation
+	err := r.pool.QueryRow(context.Background(), `
+		SELECT uuid, phone_number, template_code, lang, content, groom_name, bride_name, event_date, event_location, short_code, is_paid, expires_at
+		FROM invitations WHERE uuid = $1
+	`, uuid).Scan(&i.UUID, &i.PhoneNumber, &i.TemplateCode, &i.Lang, &i.Content, &i.GroomName, &i.BrideName, &i.EventDate, &i.EventLocation, &i.ShortCode, &i.IsPaid, &i.ExpiresAt)
 	if err != nil {
 		return nil, err
 	}
-	return &inv, nil
+	return &i, nil
 }
 
 func (r *PostgresInvitationRepository) GetByShortCode(code string) (*domain.Invitation, error) {
-	var inv domain.Invitation
-	err := r.pool.QueryRow(context.Background(),
-		`SELECT uuid FROM invitations WHERE short_code = $1`, code).Scan(&inv.UUID)
+	var i domain.Invitation
+	err := r.pool.QueryRow(context.Background(), `
+		SELECT uuid, phone_number, template_code, lang, content, groom_name, bride_name, event_date, event_location, short_code, is_paid, expires_at
+		FROM invitations WHERE short_code = $1
+	`, code).Scan(&i.UUID, &i.PhoneNumber, &i.TemplateCode, &i.Lang, &i.Content, &i.GroomName, &i.BrideName, &i.EventDate, &i.EventLocation, &i.ShortCode, &i.IsPaid, &i.ExpiresAt)
 	if err != nil {
 		return nil, err
 	}
-	return &inv, nil
+	return &i, nil
 }
 
 func (r *PostgresInvitationRepository) Create(inv *domain.Invitation) error {
-	_, err := r.pool.Exec(context.Background(),
-		`INSERT INTO invitations (uuid, phone_number, template_code, lang, groom_name, bride_name, event_date, event_location, content, short_code) 
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-		inv.UUID, inv.PhoneNumber, inv.TemplateCode, inv.Lang, inv.GroomName, inv.BrideName, inv.EventDate, inv.EventLocation, inv.Content, inv.ShortCode)
+	_, err := r.pool.Exec(context.Background(), `
+		INSERT INTO invitations (uuid, phone_number, template_code, lang, content, groom_name, bride_name, event_date, event_location, short_code, is_paid, expires_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+	`, inv.UUID, inv.PhoneNumber, inv.TemplateCode, inv.Lang, inv.Content, inv.GroomName, inv.BrideName, inv.EventDate, inv.EventLocation, inv.ShortCode, inv.IsPaid, inv.ExpiresAt)
+	return err
+}
+
+func (r *PostgresInvitationRepository) MarkAsPaid(uuid string) error {
+	_, err := r.pool.Exec(context.Background(), "UPDATE invitations SET is_paid = true WHERE uuid = $1", uuid)
 	return err
 }
 
@@ -82,6 +85,7 @@ func (r *PostgresAdminRepository) GetInvitationsList() ([]domain.InvitationWithS
 	rows, err := r.pool.Query(context.Background(), `
 		SELECT 
             i.uuid, i.phone_number, i.template_code, t.name_ru, i.lang, COALESCE(i.short_code, ''),
+            i.is_paid, i.expires_at,
             COALESCE((SELECT COUNT(*) FROM rsvp_responses r WHERE r.invitation_uuid = i.uuid), 0) as rsvp_count,
             COALESCE((SELECT SUM(guest_count) FROM rsvp_responses r WHERE r.invitation_uuid = i.uuid AND r.attendance = 'yes'), 0) as approved_guests
         FROM invitations i
@@ -97,7 +101,7 @@ func (r *PostgresAdminRepository) GetInvitationsList() ([]domain.InvitationWithS
 	for rows.Next() {
 		var i domain.InvitationWithStats
 		var templateName *string
-		if err := rows.Scan(&i.UUID, &i.PhoneNumber, &i.TemplateCode, &templateName, &i.Lang, &i.ShortCode, &i.RSVPCount, &i.ApprovedGuests); err != nil {
+		if err := rows.Scan(&i.UUID, &i.PhoneNumber, &i.TemplateCode, &templateName, &i.Lang, &i.ShortCode, &i.IsPaid, &i.ExpiresAt, &i.RSVPCount, &i.ApprovedGuests); err != nil {
 			return nil, err
 		}
 		if templateName != nil {
@@ -132,4 +136,9 @@ func (r *PostgresAdminRepository) GetTemplates() ([]domain.Template, error) {
 		return nil, err
 	}
 	return list, nil
+}
+
+func (r *PostgresAdminRepository) MarkAsPaid(uuid string) error {
+	_, err := r.pool.Exec(context.Background(), "UPDATE invitations SET is_paid = true WHERE uuid = $1", uuid)
+	return err
 }

@@ -19,7 +19,11 @@ func (h *InvitationHandler) GetInvitation(c *gin.Context) {
 	id := c.Param("uuid")
 	inv, err := h.useCase.GetInvitation(id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Invitation not found"})
+		if err.Error() == "invitation_expired" {
+			c.JSON(http.StatusGone, gin.H{"error": "invitation_expired"})
+			return
+		}
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, inv)

@@ -35,6 +35,11 @@ func (m *MockInvitationRepository) AddRSVP(rsvp *domain.RSVPResponse) error {
 	return args.Error(0)
 }
 
+func (m *MockInvitationRepository) MarkAsPaid(uuid string) error {
+	args := m.Called(uuid)
+	return args.Error(0)
+}
+
 type MockAdminRepository struct {
 	mock.Mock
 }
@@ -61,4 +66,9 @@ func (m *MockAdminRepository) GetTemplates() ([]domain.Template, error) {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]domain.Template), args.Error(1)
+}
+
+func (m *MockAdminRepository) MarkAsPaid(uuid string) error {
+	args := m.Called(uuid)
+	return args.Error(0)
 }

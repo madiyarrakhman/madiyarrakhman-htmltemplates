@@ -31,6 +31,7 @@ func SetupRouter(invHandler *handlers.InvitationHandler, adminHandler *handlers.
 			admin.GET("/stats", adminHandler.GetStats)
 			admin.GET("/invitations", adminHandler.GetInvitationsList)
 			admin.POST("/invitations", adminHandler.CreateInvitation)
+			admin.POST("/invitations/:uuid/pay", adminHandler.MarkAsPaid)
 			admin.GET("/templates", adminHandler.GetTemplates)
 		}
 	}

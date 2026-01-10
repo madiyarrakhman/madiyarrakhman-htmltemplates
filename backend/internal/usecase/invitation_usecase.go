@@ -23,7 +23,21 @@ func (u *InvitationUseCase) GetInvitation(uuidStr string) (*domain.Invitation, e
 	if uuidStr == "" {
 		return nil, errors.New("uuid is required")
 	}
-	return u.repo.GetByUUID(uuidStr)
+	inv, err := u.repo.GetByUUID(uuidStr)
+	if err != nil {
+		return nil, err
+	}
+
+	// Check if expired and unpaid
+	if !inv.IsPaid && inv.ExpiresAt != nil && inv.ExpiresAt.Before(time.Now()) {
+		return nil, errors.New("invitation_expired")
+	}
+
+	return inv, nil
+}
+
+func (u *InvitationUseCase) MarkAsPaid(uuid string) error {
+	return u.repo.MarkAsPaid(uuid)
 }
 
 func (u *InvitationUseCase) SubmitRSVP(invUUID string, name string, attendance string, count int) error {
@@ -45,6 +59,11 @@ func (u *InvitationUseCase) CreateInvitation(inv *domain.Invitation) error {
 	}
 	if inv.ShortCode == "" {
 		inv.ShortCode = generateShortCode(inv.UUID)
+	}
+	// Default: Expire in 1 hour if not paid
+	if inv.ExpiresAt == nil {
+		exp := time.Now().Add(1 * time.Hour)
+		inv.ExpiresAt = &exp
 	}
 	// Initialize Content if nil to prevent DB violation (NOT NULL)
 	if inv.Content == nil {

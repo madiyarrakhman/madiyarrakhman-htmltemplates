@@ -16,6 +16,8 @@ type Invitation struct {
 	EventDate     string                 `json:"eventDate"`
 	EventLocation string                 `json:"eventLocation"`
 	ShortCode     string                 `json:"shortCode"`
+	IsPaid        bool                   `json:"isPaid"`
+	ExpiresAt     *time.Time             `json:"expiresAt"`
 	CreatedAt     time.Time              `json:"createdAt"`
 	UpdatedAt     time.Time              `json:"updatedAt"`
 }
@@ -53,6 +55,7 @@ type InvitationRepository interface {
 	GetByUUID(uuid string) (*Invitation, error)
 	GetByShortCode(code string) (*Invitation, error)
 	Create(inv *Invitation) error
+	MarkAsPaid(uuid string) error
 	AddRSVP(rsvp *RSVPResponse) error
 }
 
@@ -60,4 +63,5 @@ type AdminRepository interface {
 	GetStats() (*AdminStats, error)
 	GetInvitationsList() ([]InvitationWithStats, error)
 	GetTemplates() ([]Template, error)
+	MarkAsPaid(uuid string) error
 }

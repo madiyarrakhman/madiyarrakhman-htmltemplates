@@ -48,3 +48,7 @@ func (u *AdminUseCase) GetInvitations() ([]domain.InvitationWithStats, error) {
 func (u *AdminUseCase) GetTemplates() ([]domain.Template, error) {
 	return u.repo.GetTemplates()
 }
+
+func (u *AdminUseCase) MarkAsPaid(uuid string) error {
+	return u.repo.MarkAsPaid(uuid)
+}

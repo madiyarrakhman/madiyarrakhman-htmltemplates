@@ -101,8 +101,14 @@ onMounted(() => {
         </div>
 
         <div v-else-if="error" class="error-state">
-            <h1>😕</h1>
-            <p>{{ error }}</p>
+            <h1 v-if="error === 'invitation_expired'">⌛</h1>
+            <h1 v-else>😕</h1>
+            <p v-if="error === 'invitation_expired'">
+                Срок действия ссылки истек. <br>
+                Пожалуйста, свяжитесь с отправителем или оплатите приглашение.
+            </p>
+            <p v-else>{{ error }}</p>
+            <a v-if="error === 'invitation_expired'" href="/" class="home-btn">На главную</a>
         </div>
 
         <div v-else-if="invitation">
@@ -134,5 +140,21 @@ onMounted(() => {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+.home-btn {
+    margin-top: 2rem;
+    padding: 0.8rem 2rem;
+    background: #c5a059;
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    transition: all 0.3s;
+}
+
+.home-btn:hover {
+    background: #a88948;
+    transform: translateY(-2px);
 }
 </style>
