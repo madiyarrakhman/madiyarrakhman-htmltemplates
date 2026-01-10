@@ -22,6 +22,12 @@ const isSuccess = ref(false)
 const formattedDate = computed(() => {
   if (!props.invitation.eventDate) return ''
   const dateObj = new Date(props.invitation.eventDate)
+  // Check validity
+  if (isNaN(dateObj.getTime())) {
+      // Return raw string if it's not a valid date (e.g. text like "Summer 2026")
+      return props.invitation.eventDate
+  }
+
   let dateLocale = ru
   if (locale.value === 'en') dateLocale = enUS
   if (locale.value === 'kk') dateLocale = kk
