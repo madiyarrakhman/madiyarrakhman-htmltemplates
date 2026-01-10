@@ -64,6 +64,24 @@ const fetchInvitation = async () => {
             locale.value = data.lang
             document.documentElement.lang = data.lang
         }
+
+        // Update SEO Title & Description dynamically
+        if (invitation.value) {
+            const coupleNames = `${invitation.value.groomName} & ${invitation.value.brideName}`
+            const pageTitle = `${coupleNames} | Приглашение на свадьбу`
+            const pageDesc = `Персональное приглашение на свадьбу ${coupleNames}. Ждем вас на нашем торжестве!`
+            
+            document.title = pageTitle
+            
+            const metaDesc = document.querySelector('meta[name="description"]')
+            if (metaDesc) metaDesc.setAttribute('content', pageDesc)
+            
+            const ogTitle = document.querySelector('meta[property="og:title"]')
+            if (ogTitle) ogTitle.setAttribute('content', pageTitle)
+
+            const ogDesc = document.querySelector('meta[property="og:description"]')
+            if (ogDesc) ogDesc.setAttribute('content', pageDesc)
+        }
     } catch (e: any) {
         error.value = e.message || t('error_unknown')
     } finally {

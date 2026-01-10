@@ -1,18 +1,33 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { onMounted } from 'vue'
+import { onMounted, watch } from 'vue'
 
 const { t, locale } = useI18n()
+
+const updateSEO = () => {
+    document.title = t('hero_title') + ' | CardGo'
+    const description = t('hero_desc')
+    const metaDesc = document.querySelector('meta[name="description"]')
+    if (metaDesc) metaDesc.setAttribute('content', description)
+    
+    const ogTitle = document.querySelector('meta[property="og:title"]')
+    if (ogTitle) ogTitle.setAttribute('content', t('hero_title'))
+}
 
 const setLanguage = (lang: string) => {
     locale.value = lang
     localStorage.setItem('preferred_lang', lang)
     document.documentElement.lang = lang
+    updateSEO()
 }
 
 onMounted(() => {
     const savedLang = localStorage.getItem('preferred_lang') || 'ru'
     setLanguage(savedLang)
+})
+
+watch(locale, () => {
+    updateSEO()
 })
 </script>
 
