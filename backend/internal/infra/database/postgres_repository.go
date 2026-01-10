@@ -118,7 +118,7 @@ func (r *PostgresAdminRepository) GetInvitationsList() ([]domain.InvitationWithS
 }
 
 func (r *PostgresAdminRepository) GetTemplates() ([]domain.Template, error) {
-	rows, err := r.pool.Query(context.Background(), "SELECT code, name_ru FROM templates WHERE is_active = true")
+	rows, err := r.pool.Query(context.Background(), "SELECT code, name_ru, name_kk, name_en FROM templates WHERE is_active = true")
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func (r *PostgresAdminRepository) GetTemplates() ([]domain.Template, error) {
 	list := []domain.Template{}
 	for rows.Next() {
 		var t domain.Template
-		if err := rows.Scan(&t.Code, &t.Name); err != nil {
+		if err := rows.Scan(&t.Code, &t.NameRu, &t.NameKk, &t.NameEn); err != nil {
 			return nil, err
 		}
 		list = append(list, t)

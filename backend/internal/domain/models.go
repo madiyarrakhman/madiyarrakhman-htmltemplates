@@ -34,7 +34,9 @@ type RSVPResponse struct {
 type Template struct {
 	ID       int    `json:"id"`
 	Code     string `json:"code"`
-	Name     string `json:"name"`
+	NameRu   string `json:"nameRu"`
+	NameKk   string `json:"nameKk"`
+	NameEn   string `json:"nameEn"`
 	IsActive bool   `json:"isActive"`
 }
 
