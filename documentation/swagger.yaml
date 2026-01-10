@@ -87,6 +87,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Invitation'
+        '410':
+          description: Invitation expired
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "invitation_expired"
 
   /rsvp/{uuid}:
     post:
@@ -228,6 +238,32 @@ paths:
                     type: string
                     example: "https://card-go.asia/s/AbCd12"
 
+  /admin/invitations/{uuid}/pay:
+    post:
+      summary: Mark invitation as paid
+      tags:
+        - Admin
+      security:
+        - CookieAuth: []
+        - ApiKeyAuth: []
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+
   /admin/templates:
     get:
       summary: List available designs
@@ -272,3 +308,8 @@ components:
           type: string
         templateCode:
           type: string
+        isPaid:
+          type: boolean
+        expiresAt:
+          type: string
+          format: date-time
